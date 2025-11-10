@@ -46,10 +46,10 @@ function getTargetPath(sourcePath) {
   const pathMappings = {
     '/d/': '/e/',
     '/f/': '/f/', 
-    '/v/': '/d/',
-    '/s/': '/c/',
-    '/p/': '/a/',
-    '/w/': '/b/'
+    '/v/': '/e/',
+    '/s/': '/e/',
+    '/p/': '/e/',
+    '/w/': '/e/'
     // Tambahkan mapping lain sesuai kebutuhan
   };
   

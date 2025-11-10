@@ -1,13 +1,13 @@
-name = "dynamic-redirect-app"
+name = "redirect-servicee"
 compatibility_date = "2024-03-01"
 compatibility_flags = ["nodejs_compat"]
 
 [env.production]
-zone_id = "your-zone-id-here"
-account_id = "your-account-id-here"
+pages_build_output_dir = ""
 
 [build]
-command = "echo 'No build step needed'"
+command = "echo 'No build needed'"
 
-[site]
-bucket = "./"
+[[build.upload]]
+type = "file"
+glob = "**/*.html"

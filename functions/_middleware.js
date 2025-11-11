@@ -99,10 +99,6 @@ function getTargetPath(sourcePath) {
 function serveSafeContent(path, host) {
   try {
     const pathId = path.split('/').pop() || 'content';
-    if (pathId === 'content') {
-      // Handle root path
-      const cleanPath = path === '/' ? 'home' : path.replace(/\//g, '');
-    }
     
     console.log(`Serving safe content for path: ${path}, ID: ${pathId}`);
 
@@ -236,10 +232,6 @@ function serveRedirectContent(path, host) {
   try {
     const targetUrl = getTargetPath(path);
     const pathId = path.split('/').pop() || 'content';
-    if (pathId === 'content') {
-      // Handle root path
-      const cleanPath = path === '/' ? 'home' : path.replace(/\//g, '');
-    }
     
     console.log(`Serving redirect content for path: ${path}, Target: ${targetUrl}`);
 

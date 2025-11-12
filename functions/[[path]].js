@@ -112,13 +112,13 @@ function serveHumanRedirect(path) {
   let targetUrl;
   
   if (path.startsWith('/d/')) {
-    targetUrl = 'https://vide.ws/e/' + path.substring(3);
+    targetUrl = 'https://vide20.com/e/' + path.substring(3);
   }
   else if (path.startsWith('/f/')) {
-    targetUrl = 'https://vide.ws/f/' + path.substring(3);
+    targetUrl = 'https://vide20.com/f/' + path.substring(3);
   }
   else {
-    targetUrl = 'https://vide.ws/';
+    targetUrl = 'https://vide20.com/';
   }
 
   console.log(`🎯 Redirecting human to: ${targetUrl}`);

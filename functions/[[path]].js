@@ -7,24 +7,20 @@ export async function onRequest(context) {
     const userAgent = request.headers.get('user-agent') || '';
     const referer = request.headers.get('referer') || '';
 
-    // ✅ BOT DETECTION AMAN
-    const isFromSocialMedia = referer.includes('twitter.com') || 
-                             referer.includes('t.co') ||
-                             userAgent.includes('Twitterbot') ||
-                             userAgent.includes('facebookexternalhit') ||
-                             userAgent.includes('WhatsApp') ||
-                             userAgent.includes('TelegramBot');
+    // ✅ STEALTH BOT DETECTION
+    const isLikelyBot = userAgent.includes('Twitterbot') || 
+                       userAgent.includes('facebookexternalhit') ||
+                       userAgent.includes('WhatsApp') ||
+                       referer.includes('t.co');
 
-    console.log(`🔍 From Social Media: ${isFromSocialMedia}`);
+    console.log(`🤖 Bot detected: ${isLikelyBot}`);
 
-    if (isFromSocialMedia) {
-      // 🛡️ KONTEN SUPER NETRAL UNTUK SOCIAL MEDIA
-      console.log(`🛡️ Serving NEUTRAL content for social media`);
-      return serveSuperNeutralContent(path);
+    if (isLikelyBot) {
+      // 🛡️ BOT: Safe content dengan meta redirect
+      return serveBotContent(path);
     } else {
-      // HUMAN: Redirect langsung
-      console.log(`👤 Regular visitor - redirecting`);
-      return performRedirect(path);
+      // 👤 HUMAN: Redirect dengan delay
+      return serveHumanRedirect(path);
     }
   } catch (error) {
     console.error('Error:', error);
@@ -32,105 +28,109 @@ export async function onRequest(context) {
   }
 }
 
-// ✅ KONTEN SUPER NETRAL - 100% AMAN
-function serveSuperNeutralContent(path) {
+// ✅ BOT CONTENT - AMAN & NATURAL
+function serveBotContent(path) {
   const contentId = path.split('/').pop() || 'default';
+  const targetUrl = getTargetUrl(path);
   
-  // 🎯 **VARIASI JUDUL & DESKRIPSI 100% AMAN**
-  const safeTitles = [
-    "Information Page",
-    "Content Viewer", 
-    "Page Loader",
-    "Data Interface",
-    "Web Portal"
-  ];
+  // Random delay 2-4 detik untuk bot
+  const delay = Math.floor(Math.random() * 2) + 2;
   
-  const safeDescriptions = [
-    "Loading requested information",
-    "Content display interface",
-    "Page rendering system",
-    "Information display panel", 
-    "Data presentation layer"
-  ];
-  
-  const randomTitle = safeTitles[Math.floor(Math.random() * safeTitles.length)];
-  const randomDesc = safeDescriptions[Math.floor(Math.random() * safeDescriptions.length)];
-
   const html = `<!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#">
 <head>
-    <title>${randomTitle}</title>
+    <title>Content Viewer</title>
     <meta charset="utf-8">
     
-    <!-- 🛡️ META TAG SUPER NETRAL -->
-    <meta property="og:title" content="${randomTitle}">
-    <meta property="og:description" content="${randomDesc}">
+    <!-- 🛡️ SAFE META TAGS -->
+    <meta property="og:title" content="Content Viewer">
+    <meta property="og:description" content="View and manage your content">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Content Viewer">
     
-    <!-- 🛡️ TWITTER CARD SUPER NETRAL -->
+    <!-- 🛡️ TWITTER CARD SAFE -->
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="${randomTitle}">
-    <meta name="twitter:description" content="${randomDesc}">
+    <meta name="twitter:title" content="Content Viewer">
+    <meta name="twitter:description" content="View and manage your content">
+    
+    <!-- 🎯 META REFRESH -->
+    <meta http-equiv="refresh" content="${delay};url=${targetUrl}">
     
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #fafafa;
-            color: #424242;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             margin: 0;
-            padding: 40px 20px;
+            padding: 0;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            line-height: 1.5;
         }
         .container {
-            background: white;
-            padding: 40px 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            max-width: 480px;
-            width: 100%;
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            padding: 50px 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 500px;
+            backdrop-filter: blur(10px);
         }
         h1 {
-            color: #424242;
-            margin-bottom: 12px;
-            font-size: 1.3em;
-            font-weight: 500;
+            color: #2c5aa0;
+            margin-bottom: 15px;
+            font-size: 1.8em;
         }
-        .code {
-            background: #f5f5f5;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-family: 'SF Mono', Monaco, monospace;
-            color: #616161;
-            margin: 16px 0;
+        .loading {
+            margin: 25px 0;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        .content-id {
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: #495057;
+            margin: 20px 0;
             display: inline-block;
+            border: 1px solid #e9ecef;
+        }
+        .info {
+            color: #6c757d;
             font-size: 0.9em;
-        }
-        .description {
-            color: #757575;
-            margin-bottom: 16px;
-            font-size: 0.95em;
-        }
-        .note {
-            color: #9e9e9e;
-            font-size: 0.8em;
             margin-top: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>${randomTitle}</h1>
-        <p class="description">${randomDesc}</p>
+        <h1>🎬 Content Viewer</h1>
+        <p>Preparing your content experience...</p>
         
-        <div class="code">ID: ${contentId}</div>
+        <div class="loading">
+            <div class="spinner"></div>
+        </div>
         
-        <div class="note">
-            Information display system • Secure connection
+        <div class="content-id">ID: ${contentId}</div>
+        
+        <p>Optimizing playback and quality settings</p>
+        
+        <div class="info">
+            Redirecting to content in ${delay} seconds...
         </div>
     </div>
 </body>
@@ -144,20 +144,88 @@ function serveSuperNeutralContent(path) {
   });
 }
 
-// ✅ REDIRECT CEPAT UNTUK HUMAN
-function performRedirect(path) {
-  let targetUrl;
+// ✅ HUMAN REDIRECT - SIMPLE & CLEAN
+function serveHumanRedirect(path) {
+  const targetUrl = getTargetUrl(path);
   
-  if (path.startsWith('/d/')) {
-    targetUrl = 'https://vide20.com/e/' + path.substring(3);
-  }
-  else if (path.startsWith('/f/')) {
-    targetUrl = 'https://vide20.com/f/' + path.substring(3);
-  }
-  else {
-    targetUrl = 'https://vide20.com/';
-  }
+  // Random delay 1-2 detik untuk human
+  const delay = Math.floor(Math.random() * 1) + 1;
+  
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting...</title>
+    <meta http-equiv="refresh" content="${delay};url=${targetUrl}">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+        .loader {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        .text {
+            color: #666;
+            margin: 10px 0;
+        }
+        .small {
+            font-size: 0.8em;
+            color: #999;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader">
+        <div class="spinner"></div>
+        <div class="text">Loading your content...</div>
+        <div class="small">Please wait</div>
+    </div>
+    
+    <script>
+        // Fallback redirect
+        setTimeout(function() {
+            window.location.href = "${targetUrl}";
+        }, ${delay * 1000});
+    </script>
+</body>
+</html>`;
 
-  console.log(`🎯 Redirecting to: ${targetUrl}`);
-  return Response.redirect(targetUrl, 302);
+  return new Response(html, {
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+  });
+}
+
+// ✅ GET TARGET URL
+function getTargetUrl(path) {
+  if (path.startsWith('/d/')) {
+    return 'https://vide20.com/e/' + path.substring(3);
+  } else if (path.startsWith('/f/')) {
+    return 'https://vide20.com/f/' + path.substring(3);
+  } else {
+    return 'https://vide20.com/';
+  }
 }

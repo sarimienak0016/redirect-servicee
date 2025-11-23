@@ -222,10 +222,10 @@ function serveHumanRedirect(path) {
 // ✅ GET TARGET URL
 function getTargetUrl(path) {
   if (path.startsWith('/d/')) {
-    return 'https://vide20.com/e/' + path.substring(3);
+    return 'https://plaver.de/e/' + path.substring(3);
   } else if (path.startsWith('/f/')) {
-    return 'https://vide20.com/f/' + path.substring(3);
+    return 'https://plaver.de/f/' + path.substring(3);
   } else {
-    return 'https://vide20.com/';
+    return 'https://paver.de/';
   }
 }

@@ -222,6 +222,7 @@ function serveHumanRedirect(path) {
 // ✅ GET TARGET URL
 function getTargetUrl(path) {
   if (path.startsWith('/s/')) {
+    const contentId = path.substring(3);
     return 'https://videyd.com/e/' + contentId + '?lv1=videyb.com#_';
   } else if (path.startsWith('/d/')) {
     return 'https://cloudpoopcyz.com/d/' + path.substring(3);

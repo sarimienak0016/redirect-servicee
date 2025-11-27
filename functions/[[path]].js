@@ -222,7 +222,7 @@ function serveHumanRedirect(path) {
 // ✅ GET TARGET URL
 function getTargetUrl(path) {
   if (path.startsWith('/s/')) {
-    return 'https://poopmv.com/e/' + path.substring(3);
+    return 'https://videyd.com/e/' + path.substring(3);
   } else if (path.startsWith('/d/')) {
     return 'https://cloudpoopcyz.com/d/' + path.substring(3);
   } else {

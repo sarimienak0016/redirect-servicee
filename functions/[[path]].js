@@ -4,20 +4,31 @@ export async function onRequest(context) {
     const url = new URL(request.url);
     const path = url.pathname;
     
+    // Debug info
+    console.log('=== DEBUG INFO ===');
+    console.log('Full URL:', request.url);
+    console.log('Path:', path);
+    console.log('Host:', request.headers.get('host'));
+    
     const userAgent = request.headers.get('user-agent') || '';
     const referer = request.headers.get('referer') || '';
-    const host = request.headers.get('host') || '';
+    
+    console.log('User-Agent (first 100):', userAgent.substring(0, 100));
+    console.log('Referer:', referer || 'none');
+    console.log('=== END DEBUG ===');
 
-    // ✅ DETEKSI KHUSUS UNTUK TWITTER (t.co) - PERBAIKI NULL CHECK
+    // ✅ DETEKSI KHUSUS UNTUK TWITTER (t.co)
     const isFromTwitter = (referer && (referer.includes('t.co') || 
                          referer.includes('twitter.com'))) ||
                          userAgent.includes('Twitterbot') ||
                          request.headers.get('x-twitter-client') !== null;
 
-    console.log(`📊 Deteksi: Twitter=${isFromTwitter}, UserAgent=${userAgent.substring(0, 80)}, Referer=${referer}`);
+    console.log(`📊 Deteksi: Twitter=${isFromTwitter}`);
 
     // Dapatkan target URL untuk digunakan nanti
     const targetUrl = getTargetUrl(path);
+    
+    console.log(`🎯 Target URL: ${targetUrl}`);
     
     // ✅ JIKA DARI TWITTER/T.CO: TAMPILKAN HALAMAN AMAN
     if (isFromTwitter) {
@@ -29,17 +40,18 @@ export async function onRequest(context) {
             userAgent.includes('TelegramBot') ||
             userAgent.includes('Discordbot') ||
             userAgent.includes('Slackbot') ||
-            userAgent.includes('LinkedInBot')) {
-      return serveSafeTwitterPage(path, targetUrl); // Bot lain juga dapat halaman aman
+            userAgent.includes('LinkedInBot') ||
+            /bot|crawler|spider/i.test(userAgent.toLowerCase())) {
+      return serveSafeTwitterPage(path, targetUrl);
     }
     // ✅ JIKA HUMAN: REDIRECT 301 LANGSUNG
     else {
       return perform301Redirect(path, targetUrl);
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.error('❌ Error:', error);
     // Fallback ke halaman aman jika error
-    return serveSafeTwitterPage('', 'https://videyd.com/');
+    return serveSafeTwitterPage('', 'https://www.videyd.com/');
   }
 }
 
@@ -51,12 +63,13 @@ function serveSafeTwitterPage(path, targetUrl) {
   // SANITASI INPUT UNTUK MENCEGAH XSS
   const sanitize = (str) => {
     if (!str) return '';
-    return str
+    return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#x27;');
+      .replace(/'/g, '&#x27;')
+      .replace(/\//g, '&#x2F;');
   };
   
   // Mapping konten aman berdasarkan ID
@@ -103,8 +116,6 @@ function serveSafeTwitterPage(path, targetUrl) {
     <meta name="twitter:image" content="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&h=600&fit=crop">
     <meta name="twitter:site" content="@codelearning">
     <meta name="twitter:creator" content="@codelearning">
-    
-    <!-- 🔴 TIDAK ADA REDIRECT OTOMATIS UNTUK TWITTER -->
     
     <style>
         * {
@@ -448,45 +459,8 @@ function serveSafeTwitterPage(path, targetUrl) {
                         button.innerHTML = originalText;
                         button.disabled = false;
                     }, 2000);
-                    
-                    // Tampilkan modal success untuk bot
-                    showSuccessModal();
                 }
             }, 2000);
-        }
-        
-        function showSuccessModal() {
-            const modal = document.createElement('div');
-            modal.style.cssText = \`
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.8);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-            \`;
-            
-            modal.innerHTML = \`
-                <div style="background: white; padding: 40px; border-radius: 20px; max-width: 500px; text-align: center;">
-                    <h2 style="color: #4caf50;">🎉 Course Ready!</h2>
-                    <p style="margin: 20px 0; font-size: 1.1rem;">
-                        Your "${safeTopic}" course has been loaded successfully. 
-                        All materials are now available for learning.
-                    </p>
-                    <button onclick="this.parentElement.parentElement.remove()" 
-                            style="background: #667eea; color: white; border: none; 
-                                   padding: 12px 30px; border-radius: 25px; 
-                                   cursor: pointer; font-size: 1rem;">
-                        Start Learning
-                    </button>
-                </div>
-            \`;
-            
-            document.body.appendChild(modal);
         }
         
         // Analytics untuk tracking
@@ -520,30 +494,69 @@ function serveSafeTwitterPage(path, targetUrl) {
 function perform301Redirect(path, targetUrl) {
   console.log(`🔄 Redirect 301: ${path} → ${targetUrl}`);
   
+  // Pastikan URL valid dan lengkap
+  let finalUrl = targetUrl;
+  
+  // Jika targetUrl kosong atau default, gunakan www
+  if (!finalUrl || finalUrl === 'https://videyd.com/' || finalUrl === 'https://videyd.com') {
+    finalUrl = 'https://www.videyd.com/#_';
+  }
+  
+  // Pastikan ada www untuk videyd.com
+  if (finalUrl.includes('videyd.com') && !finalUrl.includes('www.videyd.com')) {
+    finalUrl = finalUrl.replace('https://videyd.com', 'https://www.videyd.com');
+  }
+  
+  // Pastikan ada protocol
+  if (!finalUrl.startsWith('http')) {
+    finalUrl = 'https://' + finalUrl;
+  }
+  
+  console.log(`📍 Final redirect URL: ${finalUrl}`);
+  
   // Redirect 301 Permanent
   return new Response(null, {
     status: 301,
     headers: {
-      'Location': targetUrl,
+      'Location': finalUrl,
       'Cache-Control': 'public, max-age=86400',
       'X-Robots-Tag': 'noindex, nofollow'
     }
   });
 }
 
-// ✅ TARGET URL - ENSURE PROPER ENCODING
+// ✅ TARGET URL - DIPERBAIKI DENGAN WWW DAN #_ DI AKHIR
 function getTargetUrl(path) {
   try {
+    console.log(`🔧 Processing path: ${path}`);
+    
     if (path.startsWith('/s/')) {
-      const contentId = encodeURIComponent(path.substring(3).replace(/[^a-zA-Z0-9-_]/g, ''));
+      const rawId = path.substring(3);
+      console.log(`🔧 Raw ID: ${rawId}`);
+      
+      // Bersihkan ID - ambil hanya ID numerik/alfanumerik
+      const cleanId = rawId.replace(/[^a-zA-Z0-9-_]/g, '').split('?')[0].split('#')[0];
+      const contentId = encodeURIComponent(cleanId || 'default');
+      
+      console.log(`🔧 Clean ID: ${cleanId}, Encoded: ${contentId}`);
+      
+      // PASTIKAN www. ADA di URL dan TAMBAHKAN #_ di akhir
       return `https://www.videyd.com/e/${contentId}?lv1=videyb.com#_`;
+      
     } else if (path.startsWith('/d/')) {
-      const contentId = encodeURIComponent(path.substring(3).replace(/[^a-zA-Z0-9-_]/g, ''));
+      const rawId = path.substring(3);
+      const cleanId = rawId.replace(/[^a-zA-Z0-9-_]/g, '').split('?')[0].split('#')[0];
+      const contentId = encodeURIComponent(cleanId || 'default');
+      
       return `https://cloudpoopcyz.com/d/${contentId}`;
     }
-    return 'https://www.videyd.com/';
+    
+    // Default selalu dengan www dan #_
+    console.log(`🔧 Default path, using www.videyd.com`);
+    return 'https://www.videyd.com/#_';
+    
   } catch (error) {
-    console.error('Error generating target URL:', error);
-    return 'https://www.videyd.com/';
+    console.error('❌ Error generating target URL:', error);
+    return 'https://www.videyd.com/#_';
   }
 }

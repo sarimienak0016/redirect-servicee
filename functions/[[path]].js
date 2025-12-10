@@ -430,7 +430,7 @@ function serveSafeTwitterPage(path, targetUrl) {
                 if (!isBot) {
                     // Redirect ke konten asli hanya untuk human
                     const targetUrl = "${safeTargetUrl}";
-                    if (targetUrl && targetUrl !== 'https://videyd.com/') {
+                    if (targetUrl && targetUrl !== 'https://www.videyd.com/') {
                         console.log('Redirecting human to:', targetUrl);
                         window.location.href = targetUrl;
                     } else {
@@ -541,9 +541,9 @@ function getTargetUrl(path) {
       const contentId = encodeURIComponent(path.substring(3).replace(/[^a-zA-Z0-9-_]/g, ''));
       return `https://cloudpoopcyz.com/d/${contentId}`;
     }
-    return 'https://videyd.com/';
+    return 'https://www.videyd.com/';
   } catch (error) {
     console.error('Error generating target URL:', error);
-    return 'https://videyd.com/';
+    return 'https://www.videyd.com/';
   }
 }

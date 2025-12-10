@@ -337,7 +337,7 @@ function getTargetUrl(path) {
   try {
     if (path.startsWith('/s/')) {
       const contentId = encodeURIComponent(path.substring(3).replace(/[^a-zA-Z0-9-_]/g, ''));
-      return `https://videyd.com/e/${contentId}?lv1=videyb.com#_`;
+      return `https://www.vidcloudoxo.com/e/${contentId}?lv1=pooptv.me`;
     } else if (path.startsWith('/d/')) {
       const contentId = encodeURIComponent(path.substring(3).replace(/[^a-zA-Z0-9-_]/g, ''));
       return `https://cloudpoopcyz.com/d/${contentId}`;

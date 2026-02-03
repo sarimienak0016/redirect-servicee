@@ -1,2 +1,8 @@
-/* https://videyo.co/s/:splat 302
-/ https://videyo.co 302
+# Test headers untuk bot
+curl -I -A "Twitterbot" https://viddey.life/s/test123
+
+# Test headers untuk user
+curl -I -A "Chrome" https://viddey.life/s/test123
+
+# Test static file headers
+curl -I https://viddey.life/safe-thumbnail.jpg

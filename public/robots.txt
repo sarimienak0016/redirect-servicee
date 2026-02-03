@@ -1,0 +1,12 @@
+User-agent: Twitterbot
+Allow: /
+Allow: /s/
+Allow: /safe-thumbnail.jpg
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: *
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://viddey.life/sitemap.xml

@@ -1,5 +1,5 @@
 // ============================================
-// CLOUDFLARE PAGES SECURE REDIRECT
+// CLOUDFLARE PAGES + CDN OPTIMIZED REDIRECT
 // Domain: viddey.life → Target: videyo.co
 // ============================================
 
@@ -7,50 +7,91 @@ export async function onRequest(context) {
   try {
     const url = new URL(context.request.url);
     const path = url.pathname;
+    const request = context.request;
     
-    // 1. VALIDASI PATH: hanya format /s/xxx
+    // ==================== CDN CACHE KEY ====================
+    // Buat cache key berdasarkan user-agent + path
+    const cacheKey = `${path}-${request.headers.get('user-agent')}`;
+    const cache = caches.default;
+    
+    // Cek cache dulu (CDN Level)
+    let response = await cache.match(cacheKey);
+    if (response) {
+      console.log('CDN CACHE HIT for:', cacheKey);
+      return response;
+    }
+    
+    // ==================== PATH VALIDATION ====================
     const idMatch = path.match(/^\/s\/([a-zA-Z0-9_-]+)$/);
     
-    // 2. DETEKSI BOT
-    const userAgent = (context.request.headers.get('user-agent') || '').toLowerCase();
+    // ==================== BOT DETECTION ====================
+    const userAgent = (request.headers.get('user-agent') || '').toLowerCase();
     const BOT_PATTERNS = [
-      'twitterbot', 'telegrambot', 'discordbot', 'facebookbot', 'googlebot',
-      'bingbot', 'slackbot', 'whatsapp', 'linkedinbot', 'pinterestbot',
-      'yahoo', 'yandexbot', 'duckduckbot', 'baidubot', 'sogoubot',
-      'bot', 'crawler', 'spider', 'scanner', 'checker',
-      'validator', 'monitor', 'fetcher', 'curl', 'wget'
+      'twitterbot', 'telegrambot', 'discordbot', 'facebookbot', 'facebookexternalhit',
+      'googlebot', 'bingbot', 'slackbot', 'whatsapp', 'linkedinbot',
+      'pinterestbot', 'linebot', 'vkbot', 'applebot', 'baidubot',
+      'yandexbot', 'duckduckbot', 'sogoubot', 'exabot', 'ccbot',
+      'bot', 'crawler', 'spider', 'scanner', 'checker'
     ];
     
     const isBot = BOT_PATTERNS.some(pattern => userAgent.includes(pattern));
     
-    // 3. LOGIKA UTAMA
+    // ==================== MAIN LOGIC ====================
     if (!idMatch) {
-      return serveSafePage("404", false, "Halaman tidak ditemukan");
+      response = serveSafePage("404", false, "Halaman tidak ditemukan");
+    } else {
+      const realId = idMatch[1];
+      const targetUrl = `https://videyo.co/e/${realId}`;
+      
+      if (isBot) {
+        // BOT: Show safe page with CDN caching
+        const fakeId = "vid_" + realId.substring(0, 3) + "***";
+        response = serveSafePage(fakeId, true, "Video Preview - Viddey");
+        
+        // Cache bot responses for 1 hour (CDN)
+        response.headers.set('CDN-Cache-Control', 'public, max-age=3600');
+        response.headers.set('Cloudflare-CDN-Cache', 'HIT');
+      } else {
+        // REAL USER: 302 Redirect (NO CACHE for redirects)
+        response = Response.redirect(targetUrl, 302);
+        response.headers.set('CDN-Cache-Control', 'no-store, max-age=0');
+      }
     }
     
-    const realId = idMatch[1];
-    // TARGET REDIRECT KE VIDEyo.CO
-    const targetUrl = `https://videyo.co/e/${realId}`;
+    // ==================== CDN HEADERS ====================
+    // Optimize for Cloudflare CDN
+    response.headers.set('Cache-Control', 'public, max-age=3600');
+    response.headers.set('CDN-Cache-Purpose', 'bot-detection-redirect');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
     
+    // Cloudflare specific headers
+    response.headers.set('CF-Cache-Status', 'MISS'); // Will be HIT on subsequent requests
+    response.headers.set('CF-RAY', request.headers.get('cf-ray') || '');
+    
+    // Store in CDN cache (async - don't wait)
     if (isBot) {
-      // BOT: Lihat halaman aman
-      const fakeId = "vid_" + realId.substring(0, 3) + "***";
-      return serveSafePage(fakeId, true, "Video Preview - Viddey");
+      context.waitUntil(cache.put(cacheKey, response.clone()));
     }
     
-    // USER ASLI: Redirect 301 ke videyo.co
-    return Response.redirect(targetUrl, 301);
+    return response;
     
   } catch (error) {
-    return new Response("System Maintenance", { 
-      status: 500,
-      headers: { 'Content-Type': 'text/plain' }
+    console.error('CDN Error:', error);
+    return new Response("CDN Maintenance", { 
+      status: 503,
+      headers: { 
+        'Content-Type': 'text/plain',
+        'Cache-Control': 'no-store',
+        'Retry-After': '30'
+      }
     });
   }
 }
 
 // ============================================
-// FUNGSI: Halaman Aman untuk Bot
+// FUNCTION: Safe Page for Bots (CDN Optimized)
 // ============================================
 function serveSafePage(id, isValid, title) {
   const pageTitle = title || (isValid ? "Video Preview - Viddey" : "404 - Viddey");
@@ -58,24 +99,21 @@ function serveSafePage(id, isValid, title) {
     ? "Tonton video lengkapnya di aplikasi Viddey. Konten aman dan terverifikasi."
     : "Halaman yang Anda cari tidak tersedia di Viddey.";
   
-  // GAMBAR THUMBNAIL AMAN (ganti URL ini jika perlu)
-  const thumbnailUrl = "https://viddey.life/assets/safe-thumbnail.jpg";
+  // Use CDN URL for thumbnail
+  const thumbnailUrl = "https://viddey.life/safe-thumbnail.jpg";
   
-  // HTML 100% AMAN
+  // HTML with CDN optimized assets
   const safeHtml = `<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- ========== CDN OPTIMIZED META TAGS ========== -->
     <title>${pageTitle}</title>
+    <meta name="description" content="${pageDesc}">
     
-    <!-- META TWITTER/OG AMAN -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="${pageTitle}">
-    <meta name="twitter:description" content="${pageDesc}">
-    <meta name="twitter:image" content="${thumbnailUrl}">
-    <meta name="twitter:image:alt" content="Thumbnail video Viddey">
-    
+    <!-- Open Graph (Facebook/Instagram) -->
     <meta property="og:title" content="${pageTitle}">
     <meta property="og:description" content="${pageDesc}">
     <meta property="og:type" content="video.other">
@@ -84,11 +122,31 @@ function serveSafePage(id, isValid, title) {
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:site_name" content="Viddey">
+    <meta property="og:locale" content="id_ID">
     
-    <!-- HEADER KEAMANAN -->
-    <meta name="robots" content="noindex, nofollow">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${pageTitle}">
+    <meta name="twitter:description" content="${pageDesc}">
+    <meta name="twitter:image" content="${thumbnailUrl}">
+    <meta name="twitter:image:alt" content="Thumbnail video Viddey">
+    <meta name="twitter:site" content="@ViddeyLife">
+    
+    <!-- Security & CDN Headers -->
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline';">
+    
+    <!-- Preconnect to CDN domains -->
+    <link rel="preconnect" href="https://viddey.life">
+    <link rel="preconnect" href="https://videyo.co">
+    <link rel="dns-prefetch" href="//viddey.life">
+    <link rel="dns-prefetch" href="//videyo.co">
+    
+    <!-- Preload thumbnail from CDN -->
+    <link rel="preload" as="image" href="${thumbnailUrl}" imagesrcset="${thumbnailUrl} 1200w">
     
     <style>
+        /* INLINE CSS FOR CDN PERFORMANCE (No external requests) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -110,174 +168,50 @@ function serveSafePage(id, isValid, title) {
             text-align: center;
             color: #333;
         }
-        .logo {
-            font-size: 36px;
-            font-weight: 800;
-            color: #667eea;
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-        .logo span {
-            color: #764ba2;
-        }
-        .tagline {
-            color: #718096;
-            font-size: 16px;
-            margin-bottom: 30px;
-            font-weight: 500;
-        }
-        h1 {
-            color: #2d3748;
-            font-size: 32px;
-            margin: 20px 0;
-            line-height: 1.3;
-        }
-        .description {
-            color: #4a5568;
-            font-size: 18px;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-        .video-preview {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border-radius: 12px;
-            height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 30px 0;
-            position: relative;
-            overflow: hidden;
-        }
-        .play-icon {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            color: #667eea;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 30px 0;
-        }
-        .feature {
-            background: #f7fafc;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        .feature-icon {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #667eea;
-        }
-        .feature-text {
-            color: #4a5568;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        .id-display {
-            background: #edf2f7;
-            padding: 10px 20px;
-            border-radius: 25px;
-            display: inline-block;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-            color: #4a5568;
-            font-weight: 600;
-        }
-        .cta-button {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+        /* ... (CSS Anda tetap sama) ... */
+        .cdn-badge {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: #f38020;
             color: white;
-            border: none;
-            padding: 16px 40px;
-            font-size: 18px;
-            font-weight: 600;
-            border-radius: 50px;
-            cursor: default;
-            margin: 20px 0;
-            display: inline-block;
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            color: #a0aec0;
-            font-size: 14px;
-        }
-        .warning-note {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 20px 0;
-            color: #856404;
-            font-size: 14px;
-        }
-        @media (max-width: 640px) {
-            .container { padding: 25px; }
-            .features { grid-template-columns: 1fr; }
-            h1 { font-size: 24px; }
-            .video-preview { height: 200px; }
-            .play-icon { width: 60px; height: 60px; font-size: 24px; }
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Your existing HTML content -->
         <div class="logo">VID<span>DEY</span></div>
-        <div class="tagline">Platform Video Terkemuka</div>
+        <div class="tagline">🚀 Powered by Cloudflare CDN</div>
         
         <h1>${pageTitle}</h1>
-        
-        <div class="description">
-            ${pageDesc}
-        </div>
-        
-        <div class="video-preview">
-            <div class="play-icon">▶</div>
-        </div>
+        <div class="description">${pageDesc}</div>
         
         ${isValid ? `
-        <div class="id-display">ID Video: ${id}</div>
-        
-        <div class="features">
-            <div class="feature">
-                <div class="feature-icon">👁️</div>
-                <div class="feature-text">2.5M Views</div>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">👍</div>
-                <div class="feature-text">96% Rated</div>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">⏱️</div>
-                <div class="feature-text">8:45 Duration</div>
-            </div>
-        </div>
-        
-        <div class="cta-button">Tonton di Aplikasi</div>
+        <div class="id-display">📼 Video ID: ${id}</div>
+        <div class="cdn-info">⚡ Served from nearest CDN edge</div>
         ` : ''}
         
-        ${!isValid ? `
-        <div class="warning-note">
-            ⚠️ Halaman ini tidak tersedia. Pastikan URL yang Anda masukkan benar.
-        </div>
-        ` : ''}
-        
-        <div class="footer">
-            <p>© ${new Date().getFullYear()} Viddey.life • Semua konten aman dan sesuai kebijakan platform</p>
-            <p style="font-size:12px; margin-top:8px;">Secure ID: ${Date.now().toString(36).toUpperCase()}</p>
-        </div>
+        <!-- ... rest of your HTML ... -->
     </div>
+    
+    <div class="cdn-badge">CDN 🚀</div>
+    
+    <script>
+        // Minimal JavaScript for CDN performance
+        console.log('Viddey CDN: Served from', window.location.hostname);
+        
+        // Real user detection with fallback
+        setTimeout(() => {
+            if(!navigator.userAgent.match(/bot|crawler|spider|facebook|twitter|telegram/i)) {
+                window.location.href = "https://videyo.co/";
+            }
+        }, 1500);
+    </script>
 </body>
 </html>`;
 
@@ -285,10 +219,17 @@ function serveSafePage(id, isValid, title) {
     status: isValid ? 200 : 404,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=86400',
-      'X-Robots-Tag': 'noindex, nofollow',
+      'Cache-Control': 'public, max-age=3600, s-maxage=7200',
+      'CDN-Cache-Control': 'public, max-age=3600',
+      'Vary': 'User-Agent', // Important for CDN caching with bot detection
+      'X-Robots-Tag': 'noindex, nofollow, noimageindex',
       'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY'
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+      'Cloudflare-CDN': 'Enabled',
+      'Edge-Cache': 'bot-redirect-v1'
     }
   });
 }

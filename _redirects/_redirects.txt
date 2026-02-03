@@ -1,2 +1,0 @@
-/s/* https://videyo.co/e/:splat 301
-/* /404.html 404

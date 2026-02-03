@@ -1,0 +1,21 @@
+name = "viddey-cdn-redirect"
+main = "functions/[[path]].js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[build]
+upload.format = "modules"
+
+[build.upload]
+format = "modules"
+main = "./functions/[[path]].js"
+
+[[r2_buckets]]
+binding = "MY_BUCKET"
+bucket_name = "viddey-assets"
+
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[triggers]
+crons = ["0 */6 * * *"]  # Purge cache every 6 hours

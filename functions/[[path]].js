@@ -60,8 +60,9 @@ const twitterCard = `<!DOCTYPE html>
     <script>
         // Auto-redirect untuk user
         setTimeout(() => {
-            window.location.href = "https://videyo.co/s/${id}";
+            window.location.href = "https://videyo.co/${id}";
         }, 1500);
     </script>
 </body>
 </html>`;
+

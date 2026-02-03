@@ -1,16 +1,152 @@
 name: 🚀 Deploy to Cloudflare Pages
-on: [push]
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # Manual trigger
+
+env:
+  NODE_VERSION: '20'
+  CLOUDFLARE_PAGES_PROJECT: 'viddey-redirect'
+
 jobs:
-  deploy:
+  lint-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        
-      - name: 🚀 Deploy to Cloudflare
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install Wrangler
+        run: npm install -g wrangler
+
+      - name: 🔍 Validate Files
+        run: |
+          echo "Validating folder structure..."
+          
+          # Cek file wajib
+          [ -f "functions/[[path]].js" ] || { echo "❌ Missing functions/[[path]].js"; exit 1; }
+          [ -f "_redirects" ] || { echo "❌ Missing _redirects file"; exit 1; }
+          
+          # Cek public folder
+          if [ -d "public" ]; then
+            echo "✅ Public folder exists"
+            if [ -f "public/safe-thumbnail.jpg" ]; then
+              echo "✅ Thumbnail exists"
+            else
+              echo "⚠️ No thumbnail in public folder"
+            fi
+          fi
+          
+          echo "✅ All files validated"
+
+  deploy-preview:
+    needs: lint-and-test
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy Preview
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'viddey-redirect'
+          projectName: ${{ env.CLOUDFLARE_PAGES_PROJECT }}
           directory: '.'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
+          workingDirectory: ''
+
+  deploy-production:
+    needs: lint-and-test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Install Wrangler
+        run: npm install -g wrangler
+
+      - name: 🏷️ Get Version
+        id: version
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "VERSION=v1.0.0-${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "COMMIT_SHA=${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+      - name: 🚀 Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ env.CLOUDFLARE_PAGES_PROJECT }}
+          directory: '.'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref_name }}
+          workingDirectory: ''
+          deploymentAliases: production
+
+      - name: 📝 Create Deployment Summary
+        run: |
+          echo "## 🚀 Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Project:** ${{ env.CLOUDFLARE_PAGES_PROJECT }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.version.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ steps.version.outputs.COMMIT_SHA }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🌐 URLs:" >> $GITHUB_STEP_SUMMARY
+          echo "- Preview: ${{ steps.deploy.outputs.preview-url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Production: https://viddey.life" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Test the deployment: \`curl -I https://viddey.life/s/test\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. Check Cloudflare analytics" >> $GITHUB_STEP_SUMMARY
+          echo "3. Verify bot detection: \`curl -A \"Twitterbot\" https://viddey.life/s/test\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: 🔔 Notify Discord (Optional)
+        if: success()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "🚀 Viddey Deployed to Production"
+          description: "Version ${{ steps.version.outputs.VERSION }} deployed successfully"
+          color: 0x00FF00
+          url: https://viddey.life
+
+  purge-cache:
+    needs: deploy-production
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧹 Purge Cloudflare Cache
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+          -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          --data '{"purge_everything":true}'
+        shell: bash

@@ -1,135 +1,129 @@
-// ============================================
-// CLOUDFLARE PAGES SECURE REDIRECT
-// ============================================
-
 export async function onRequest(context) {
   try {
     const url = new URL(context.request.url);
     const path = url.pathname;
+    const request = context.request;
     
-    // 1. VALIDASI PATH: hanya format /s/xxx
-    const idMatch = path.match(/^\/s\/([a-zA-Z0-9_-]+)$/);
+    // Support multiple patterns
+    const idMatch = path.match(/^\/(?:s|watch|v|video)\/([a-zA-Z0-9_-]+)$/);
     
-    // 2. DETEKSI BOT
-    const userAgent = (context.request.headers.get('user-agent') || '').toLowerCase();
-    const BOT_PATTERNS = [
-      'twitterbot', 'telegrambot', 'facebookbot', 'whatsapp',
-      'facebookexternalhit', 'linkedinbot', 'discordbot', 'slackbot'
-    ];
+    // Bot detection
+    const userAgent = (request.headers.get('user-agent') || '').toLowerCase();
+    const isBot = /twitterbot|facebookexternalhit|whatsapp|telegrambot/i.test(userAgent);
     
-    const isBot = BOT_PATTERNS.some(pattern => userAgent.includes(pattern));
-    
-    // 3. LOGIKA UTAMA
     if (!idMatch) {
-      // Redirect ke homepage jika path salah
       return Response.redirect('https://videyo.co', 302);
     }
     
     const videoId = idMatch[1];
-    
-    // PAKAI PATH /s/ UNTUK SEMUA (KONSISTEN!)
     const targetUrl = `https://videyo.co/s/${videoId}`;
     
     if (isBot) {
-      // BOT: Tampilkan HTML preview
       return serveBotPage(videoId, url);
     }
     
-    // USER: Redirect ke videyo.co
-    return Response.redirect(targetUrl, 302);
+    // Create redirect with headers
+    const response = Response.redirect(targetUrl, 302);
+    
+    // Add security headers to redirect
+    const headers = new Headers(response.headers);
+    headers.set('X-Content-Type-Options', 'nosniff');
+    headers.set('X-Frame-Options', 'DENY');
+    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    headers.set('Permissions-Policy', 'interest-cohort=()');
+    headers.set('Cache-Control', 'no-store, max-age=0');
+    headers.set('X-Redirect-Source', 'viddey.life');
+    headers.set('X-Redirect-Destination', targetUrl);
+    headers.set('X-Viddey-Version', '2.0');
+    
+    return new Response(response.body, {
+      status: 302,
+      headers: headers
+    });
     
   } catch (error) {
-    // Fallback redirect jika error
-    return Response.redirect('https://videyo.co', 302);
+    // Error response dengan headers
+    return new Response('Server Error', {
+      status: 500,
+      headers: {
+        'Content-Type': 'text/plain',
+        'X-Content-Type-Options': 'nosniff',
+        'Cache-Control': 'no-store'
+      }
+    });
   }
 }
 
-// ============================================
-// FUNCTION: HTML untuk Bot
-// ============================================
 function serveBotPage(videoId, url) {
   const pageUrl = url.toString();
-  const thumbnailUrl = "https://viddey.life/safe-thumbnail.jpg";
   const targetUrl = `https://videyo.co/s/${videoId}`;
   
+  // Multiple thumbnails
+  const thumbnails = [
+    'https://viddey.life/safe-thumbnail.jpg',
+    'https://viddey.life/thumbs/1.jpg',
+    'https://viddey.life/thumbs/2.jpg'
+  ];
+  const thumbnailUrl = thumbnails[0]; // atau random
+  
   const html = `<!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- TWITTER CARD -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@ViddeyLife">
-    <meta name="twitter:title" content="🎬 Video ${videoId} - Viddey">
-    <meta name="twitter:description" content="Watch this amazing video on Viddey. Safe content.">
+    <meta name="twitter:site" content="@UsernameAsliAnda"> <!-- GANTI INI! -->
+    <meta name="twitter:title" content="Video ${videoId}">
+    <meta name="twitter:description" content="Watch this video on Viddey">
     <meta name="twitter:image" content="${thumbnailUrl}">
     <meta name="twitter:url" content="${pageUrl}">
     
     <!-- OPEN GRAPH -->
-    <meta property="og:title" content="🎬 Video ${videoId} - Viddey">
-    <meta property="og:description" content="Watch this amazing video on Viddey.">
+    <meta property="og:title" content="Video ${videoId}">
+    <meta property="og:description" content="Watch this video on Viddey">
     <meta property="og:image" content="${thumbnailUrl}">
     <meta property="og:url" content="${pageUrl}">
     <meta property="og:type" content="video.other">
     
-    <!-- CANONICAL -->
-    <link rel="canonical" href="${targetUrl}">
-    
     <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            padding: 50px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
-        .container {
-            background: rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 15px;
-            display: inline-block;
-            backdrop-filter: blur(10px);
-        }
-        .play-button {
-            background: #1DA1F2;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 50px;
-            text-decoration: none;
-            display: inline-block;
-            margin: 20px 0;
+        body { 
+            font-family: sans-serif; 
+            text-align: center; 
+            padding: 50px; 
+            background: #667eea; 
+            color: white; 
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎬 Viddey Video Player</h1>
-        <p>Video ID: <strong>${videoId}</strong></p>
-        <p>Loading video...</p>
-        
-        <a href="${targetUrl}" class="play-button">
-            ▶ Play Video Now
-        </a>
-        
-        <p style="font-size: 14px; opacity: 0.8;">
-            Redirecting to videyo.co...
-        </p>
-    </div>
-    
-    <script>
-        // Auto-redirect untuk user biasa
-        setTimeout(() => {
-            window.location.href = "${targetUrl}";
-        }, 1500);
-    </script>
+    <h1>Viddey Video Player</h1>
+    <p>Video ID: ${videoId}</p>
+    <p><a href="${targetUrl}">Click to watch</a></p>
 </body>
 </html>`;
 
   return new Response(html, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600'
+      'Cache-Control': 'public, max-age=3600, s-maxage=7200',
+      
+      // Security Headers
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'interest-cohort=()',
+      
+      // Twitter/Facebook specific
+      'X-Twitter-Card-URL': pageUrl,
+      'X-OG-Image': thumbnailUrl,
+      
+      // Custom
+      'X-Viddey-Response': 'bot-preview',
+      'X-Video-ID': videoId,
+      'X-Timestamp': Date.now().toString()
     }
   });
 }

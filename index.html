@@ -2,55 +2,58 @@
 <html>
 <head>
     <script>
-        // 1. LIST LINK SHOPEE
+        // VARIABEL
+        let appOpened = false;
         const shopeeLinks = [
             'https://s.shopee.co.id/8AQUp3ZesV',
             'https://s.shopee.co.id/9pYio8K2cw',
-            'https://s.shopee.co.id/8pgBcJjIzl',
-            'https://s.shopee.co.id/60M0F7txlS',
-            'https://s.shopee.co.id/7VAo1N0hIp',
-            'https://s.shopee.co.id/9KcSCm0Xb7',
-            'https://s.shopee.co.id/3LLF3lT65E',
-            'https://s.shopee.co.id/6VIGpbCEoc'
+            'https://s.shopee.co.id/8pgBcJjIzl'
         ];
         
-        // 2. AMBIL PATH DARI URL
-        function getPathFromUrl() {
-            // Contoh: https://domaingua.com/video-123
-            const fullPath = window.location.pathname + window.location.search;
-            // Hasil: "/video-123" atau "/video-123?param=abc"
-            return fullPath;
+        // AMBIL PATH ASLI
+        const originalPath = window.location.pathname + window.location.search;
+        const targetUrl = "https://videy.co" + originalPath;
+        
+        // PILIH LINK RANDOM
+        const randomLink = shopeeLinks[Math.floor(Math.random() * shopeeLinks.length)];
+        
+        // FUNGSI REDIRECT KE VVIDEY.CO
+        function goToVidey() {
+            console.log("Redirecting to:", targetUrl);
+            window.location.href = targetUrl;
         }
         
-        // 3. LOGIC UTAMA
-        function redirectNow() {
-            // Pilih link Shopee random
-            const randomLink = shopeeLinks[Math.floor(Math.random() * shopeeLinks.length)];
+        // DETEKSI JIKA APLIKASI BUKA (PAGE HIDDEN)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                appOpened = true; // Aplikasi Shopee terbuka
+                console.log("Shopee app opened");
+            } else if (appOpened) {
+                // User kembali ke browser setelah app Shopee terbuka
+                console.log("Returned from Shopee app");
+                goToVidey();
+            }
+        });
+        
+        // JALANKAN SAAT PAGE LOAD
+        window.onload = function() {
+            console.log("Opening Shopee:", randomLink);
             
-            // Ambil path asli
-            const originalPath = getPathFromUrl();
-            
-            // Target URL ke videy.co dengan path yang sama
-            const targetUrl = "https://videy.co" + originalPath;
-            
-            console.log("Shopee Link:", randomLink);
-            console.log("Target URL:", targetUrl);
-            
-            // LANGSUNG KE SHOPEE (buka aplikasi)
+            // 1. COBA BUKA APLIKASI SHOPEE
             window.location.href = randomLink;
             
-            // Setelah 1.5 detik, ke videy.co
+            // 2. TIMEOUT JIKA APLIKASI TIDAK BUKA
             setTimeout(function() {
-                window.location.href = targetUrl;
-            }, 1500);
-        }
-        
-        // 4. JALANKAN SAAT PAGE LOAD
-        window.onload = redirectNow;
+                if (!appOpened) {
+                    console.log("Shopee app not opened, going to videy.co");
+                    goToVidey();
+                }
+            }, 3000); // Tunggu 3 detik
+        };
     </script>
 </head>
 <body>
-    <!-- Kosong aja, atau loading message -->
-    <p style="display:none;">Redirecting...</p>
+    <!-- Loading indicator (optional) -->
+    <div style="display:none;">Loading...</div>
 </body>
 </html>

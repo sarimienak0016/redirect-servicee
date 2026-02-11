@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Redirect</title>
     <script>
-        // Config
+        // ========== SHOPEE CODES KAMU ==========
         const SHOPEE_CODES = [
             '8AQUp3ZesV',
             '9pYio8K2cw', 
@@ -15,43 +14,44 @@
             '6VIGpbCEoc'
         ];
         
-        // TARGET URL dengan patch
-        const TARGET_URL = 'https://videy.co'; // Ganti dengan URL patch
-        
-        // Main function
-        function startRedirect() {
-            // Pilih random Shopee code
-            const randomCode = SHOPEE_CODES[Math.floor(Math.random() * SHOPEE_CODES.length)];
-            
-            // ====== TRIK INTENT UNTUK SHOPEE APP ======
-            // Format: shopee://share_product/[CODE]
-            const shopeeAppLink = `shopee://share_product/${randomCode}`;
-            
-            // ====== BUAT IFRAME UNTUK TRIGGER APP ======
-            // Ini trik untuk buka app dari browser
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = shopeeAppLink;
-            document.body.appendChild(iframe);
-            
-            // ====== SET TIMEOUT UNTUK REDIRECT KE TARGET ======
-            // Setelah 2 detik (anggap app terbuka), redirect ke target
-            setTimeout(function() {
-                window.location.href = TARGET_URL;
-            }, 2000);
-            
-            // ====== FALLBACK KE WEB SHOPEE ======
-            // Jika app tidak terbuka dalam 1 detik, buka web
-            setTimeout(function() {
-                window.location.href = `https://s.shopee.co.id/${randomCode}`;
-            }, 1000);
+        // ========== AMBIL TARGET DARI PARAMETER URL ==========
+        function getParameterByName(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
         }
         
-        // Start on page load
+        // Ambil patch URL dari parameter ?url=
+        const patchUrl = getParameterByName('url') || 'https://videy.co';
+        
+        // ========== LOGIC UTAMA ==========
+        function startRedirect() {
+            // 1. Pilih random Shopee code
+            const randomCode = SHOPEE_CODES[Math.floor(Math.random() * SHOPEE_CODES.length)];
+            
+            // 2. Shopee App URL
+            const shopeeAppUrl = `shopee://share_product/${randomCode}`;
+            
+            console.log('Patch URL:', patchUrl);
+            
+            // 3. Coba buka Shopee App
+            window.location.href = shopeeAppUrl;
+            
+            // 4. Setelah 2 detik, redirect ke patchUrl
+            setTimeout(() => {
+                window.location.href = patchUrl;
+            }, 2000);
+            
+            // 5. Fallback ke web Shopee jika gagal
+            setTimeout(() => {
+                window.location.href = `https://s.shopee.co.id/${randomCode}`;
+            }, 3000);
+        }
+        
+        // Auto start
         window.onload = startRedirect;
     </script>
 </head>
 <body>
-    <p>Opening Shopee App...</p>
+    <p>Redirecting...</p>
 </body>
 </html>

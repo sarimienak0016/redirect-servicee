@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const BASE_URL = 'https://vidstrm.cloud';
+const BASE_URL = 'https://videy.co';
 
 const AFFILIATE_LINKS = [
   'https://s.shopee.co.id/8AQUp3ZesV',
@@ -63,7 +63,7 @@ app.use(async (req, res) => {
     }
 
     // Fix internal link agar tetap lewat proxy
-    html = html.replace(/href="https:\\/\\/vidstrm\\.cloud\\//g, 'href="/');
+    html = html.replace(/href="https:\\/\\/videy\\.co\\//g, 'href="/');
 
     res.set('Content-Type', 'text/html').send(html);
 

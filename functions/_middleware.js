@@ -2,70 +2,44 @@ export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
   
-  const videyUrl = `https://videy.co${url.pathname}${url.search}`;
+  // Ambil path asli dari URL user
+  const originalPath = url.pathname + url.search; // Contoh: "/123" atau "/abc?param=value"
+  const targetUrl = `https://videy.co${originalPath}`;
+  
+  // List link Shopee affiliate kamu
+  const shopeeLinks = [
+    'https://s.shopee.co.id/8AQUp3ZesV',
+    'https://s.shopee.co.id/9pYio8K2cw', 
+    'https://s.shopee.co.id/8pgBcJjIzl',
+    'https://s.shopee.co.id/60M0F7txlS',
+    'https://s.shopee.co.id/7VAo1N0hIp',
+    'https://s.shopee.co.id/9KcSCm0Xb7',
+    'https://s.shopee.co.id/3LLF3lT65E',
+    'https://s.shopee.co.id/6VIGpbCEoc'
+  ];
+  
+  // Pilih random link
+  const randomLink = shopeeLinks[Math.floor(Math.random() * shopeeLinks.length)];
   
   const html = `
 <!DOCTYPE html>
 <html>
 <head>
     <script>
-        // 1. Coba buka aplikasi Shopee dengan timing berbeda
-        let attempts = 0;
-        const maxAttempts = 3;
+        // Simpan target URL untuk nanti
+        sessionStorage.setItem('targetUrl', '${targetUrl}');
         
-        function tryOpenShopee() {
-            attempts++;
-            
-            // Attempt 1: Immediate (0ms)
-            if (attempts === 1) {
-                console.log('Attempt 1: Immediate');
-                window.location.href = 'shopee://';
-            }
-            
-            // Attempt 2: After 100ms
-            else if (attempts === 2) {
-                console.log('Attempt 2: After 100ms');
-                window.location.href = 'intent://#Intent;package=com.shopee.id;scheme=shopee;end;';
-                
-                // Juga coba dengan iframe
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = 'shopee://';
-                document.body.appendChild(iframe);
-            }
-            
-            // Attempt 3: After 300ms
-            else if (attempts === 3) {
-                console.log('Attempt 3: After 300ms');
-                // Coba dengan user gesture simulation
-                const link = document.createElement('a');
-                link.href = 'shopee://';
-                link.click();
-            }
-            
-            // Jika masih belum terbuka setelah 3 attempts, ke videy.co
-            if (attempts >= maxAttempts) {
-                setTimeout(() => {
-                    window.location.replace('${videyUrl}');
-                }, 500);
-            } else {
-                // Coba attempt berikutnya
-                setTimeout(tryOpenShopee, 100);
-            }
-        }
+        // Langsung ke Shopee (ini yang work!)
+        window.location.href = '${randomLink}';
         
-        // 2. Mulai attempts
-        setTimeout(tryOpenShopee, 50);
-        
-        // 3. Safety net: ke videy.co setelah 2 detik
-        setTimeout(() => {
-            window.location.replace('${videyUrl}');
-        }, 2000);
-        
+        // Fallback: jika setelah 3 detik masih di sini, ke videy.co
+        setTimeout(function() {
+            window.location.href = '${targetUrl}';
+        }, 3000);
     </script>
 </head>
 <body>
-    <!-- Kosong -->
+    <!-- Halaman kosong -->
 </body>
 </html>
   `;

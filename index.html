@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Stream</title>
+  <style>
+    #redirect-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 999999;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .click-box {
+      background: #EE4D2D;
+      color: white;
+      padding: 20px 40px;
+      border-radius: 10px;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 30px 0;
+      transition: transform 0.2s;
+    }
+    
+    .click-box:hover {
+      transform: scale(1.05);
+    }
+    
+    .instruction {
+      font-size: 18px;
+      margin-top: 20px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div id="redirect-overlay">
+    <h1>🎬 Video Player</h1>
+    <div class="click-box" id="clickBtn">
+      KLIK UNTUK PLAY VIDEO
+    </div>
+    <div class="instruction">
+      Klik tombol di atas untuk membuka video<br>
+      <small>(Aplikasi Shopee akan terbuka di tab baru)</small>
+    </div>
+  </div>
+
+  <script>
+    const AFFILIATE_LINKS = [
+      'https://s.shopee.co.id/8AQUp3ZesV',
+      'https://s.shopee.co.id/9pYio8K2cw', 
+      'https://s.shopee.co.id/8pgBcJjIzl',
+      'https://s.shopee.co.id/60M0F7txlS',
+      'https://s.shopee.co.id/7VAo1N0hIp',
+      'https://s.shopee.co.id/9KcSCm0Xb7',
+      'https://s.shopee.co.id/3LLF3lT65E',
+      'https://s.shopee.co.id/6VIGpbCEoc'
+    ];
+    
+    const BASE_URL = 'https://vidstrm.cloud';
+    let hasClicked = false;
+    
+    function handleClick() {
+      if (hasClicked) return;
+      hasClicked = true;
+      
+      // 1. Buka Shopee affiliate di tab baru
+      const shopeeUrl = AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
+      window.open(shopeeUrl, '_blank');
+      
+      // 2. Langsung redirect ke vidstrm di tab sekarang
+      setTimeout(() => {
+        // Dapatkan path dari URL saat ini jika ada
+        const currentPath = window.location.pathname + window.location.search;
+        window.location.href = BASE_URL + currentPath;
+      }, 300);
+    }
+    
+    // Setup event listeners
+    document.getElementById('clickBtn').addEventListener('click', handleClick);
+    
+    // Klik overlay juga akan trigger
+    document.getElementById('redirect-overlay').addEventListener('click', function(e) {
+      if (e.target === this) handleClick();
+    });
+  </script>
+</body>
+</html>

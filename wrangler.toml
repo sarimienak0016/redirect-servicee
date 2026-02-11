@@ -1,36 +1,10 @@
-name = "shopee-affiliate-redirect"
+name = "affiliate-simple"
 compatibility_date = "2024-01-01"
-compatibility_flags = ["nodejs_compat"]
 
-[env.production]
-workers_dev = false
+[site]
+bucket = "./"
+entry-point = "functions"
 
-[vars]
-TARGET_URL = "https://videy.co"
-API_TOKEN = "your-secure-token-here"
-
-# Shopee App IDs
-SHOPEE_ANDROID_PACKAGE = "com.shopee.id"
-SHOPEE_IOS_APP_ID = "959841443"
-
-# Default affiliate links
-AFFILIATE_LINKS = '''
-[
-  "https://s.shopee.co.id/8AQUp3ZesV",
-  "https://s.shopee.co.id/9pYio8K2cw",
-  "https://s.shopee.co.id/8pgBcJjIzl",
-  "https://s.shopee.co.id/60M0F7txlS",
-  "https://s.shopee.co.id/7VAo1N0hIp",
-  "https://s.shopee.co.id/9KcSCm0Xb7",
-  "https://s.shopee.co.id/3LLF3lT65E",
-  "https://s.shopee.co.id/6VIGpbCEoc"
-]
-'''
-
-[[kv_namespaces]]
-binding = "AFFILIATE_KV"
-id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-
-[[kv_namespaces]]
-binding = "ANALYTICS_KV"
-id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+[[functions]]
+pattern = "[[path]]"
+script = "./functions/[[path]].js"

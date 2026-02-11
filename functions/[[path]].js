@@ -1,80 +1,110 @@
-// functions/[[path]].js - COMPLETE FIXED VERSION
+// functions/[[path]].js - FINAL WORKING VERSION
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   
-  // Skip untuk static assets dan API
+  // Handle preflight
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      }
+    });
+  }
+  
+  // Skip untuk static assets
   if (url.pathname.startsWith('/api/') || 
-      url.pathname.startsWith('/_') ||
-      url.pathname.includes('.')) {
+      url.pathname.startsWith('/_static/') ||
+      url.pathname.match(/\.[a-z]+$/i)) {
     return await context.next();
   }
   
   try {
     return await handleRedirect(request, env, url);
   } catch (error) {
-    console.error('Redirect error:', error);
-    return redirectWithFallback(env);
+    console.error('Error:', error);
+    return createErrorPage();
   }
 }
 
 async function handleRedirect(request, env, url) {
-  // Cek cookie
-  const cookieHeader = request.headers.get('Cookie') || '';
-  const hasVisited = cookieHeader.includes('aff_clicked=true');
-  const forceDirect = url.searchParams.has('direct');
+  // === PARAMETER CONTROL ===
+  const testMode = url.searchParams.has('test');
+  const clearMode = url.searchParams.has('clear');
+  const directMode = url.searchParams.has('direct');
+  const forceMode = url.searchParams.has('force');
+  const appMode = url.searchParams.has('app');
+  const nocookie = url.searchParams.has('nocookie');
   
-  // Jika sudah visit atau force direct, redirect ke videy.co
-  if (hasVisited || forceDirect) {
+  // === CLEAR COOKIE ===
+  if (clearMode) {
+    return clearCookies();
+  }
+  
+  // === CHECK COOKIE ===
+  let cookieExists = false;
+  
+  if (!nocookie) {
+    const cookieHeader = request.headers.get('Cookie') || '';
+    cookieExists = cookieHeader.includes('aff_clicked=');
+  }
+  
+  // === DIRECT TO VIDEY.CO ===
+  if (directMode || (cookieExists && !forceMode)) {
     return redirectToVidey(env);
   }
   
-  // Ambil affiliate links
-  const affiliateLinks = await getActiveAffiliateLinks(env);
+  // === GET AFFILIATE LINK ===
+  const affiliateLinks = await getAffiliateLinks(env);
   
   if (affiliateLinks.length === 0) {
     return redirectToVidey(env);
   }
   
-  // Pilih affiliate link
-  const selectedLink = await selectAffiliateLink(env, affiliateLinks, request);
+  // Pilih link
+  const selectedLink = await selectAffiliateLink(env, affiliateLinks);
   
-  // Cek user agent untuk menentukan redirect type
-  return createSmartRedirect(selectedLink, request, env);
+  // === CREATE REDIRECT PAGE ===
+  return createRedirectPage(selectedLink, appMode, testMode, env);
 }
 
-async function getActiveAffiliateLinks(env) {
+async function getAffiliateLinks(env) {
   try {
+    // Coba dari KV
     if (env.AFFILIATE_KV) {
       const kvLinks = await env.AFFILIATE_KV.get('affiliate_links', 'json');
       if (kvLinks && kvLinks.length > 0) return kvLinks;
     }
     
+    // Coba dari env
     if (env.AFFILIATE_LINKS) {
       return JSON.parse(env.AFFILIATE_LINKS);
     }
     
-    return getDefaultLinks();
+    // Default links
+    return [
+      'https://s.shopee.co.id/8AQUp3ZesV',
+      'https://s.shopee.co.id/9pYio8K2cw',
+      'https://s.shopee.co.id/8pgBcJjIzl',
+      'https://s.shopee.co.id/60M0F7txlS',
+      'https://s.shopee.co.id/7VAo1N0hIp',
+      'https://s.shopee.co.id/9KcSCm0Xb7',
+      'https://s.shopee.co.id/3LLF3lT65E',
+      'https://s.shopee.co.id/6VIGpbCEoc'
+    ];
+    
   } catch (error) {
-    return getDefaultLinks();
+    console.error('Error getting links:', error);
+    return [];
   }
 }
 
-function getDefaultLinks() {
-  return [
-    'https://s.shopee.co.id/8AQUp3ZesV',
-    'https://s.shopee.co.id/9pYio8K2cw',
-    'https://s.shopee.co.id/8pgBcJjIzl',
-    'https://s.shopee.co.id/60M0F7txlS',
-    'https://s.shopee.co.id/7VAo1N0hIp',
-    'https://s.shopee.co.id/9KcSCm0Xb7',
-    'https://s.shopee.co.id/3LLF3lT65E',
-    'https://s.shopee.co.id/6VIGpbCEoc'
-  ];
-}
-
-async function selectAffiliateLink(env, links, request) {
-  // Simple round-robin
+async function selectAffiliateLink(env, links) {
+  if (links.length === 0) return null;
+  
+  // Simple round robin
   if (env.AFFILIATE_KV) {
     try {
       const lastIndex = await env.AFFILIATE_KV.get('last_index');
@@ -84,7 +114,7 @@ async function selectAffiliateLink(env, links, request) {
       await env.AFFILIATE_KV.put('last_index', currentIndex.toString());
       return links[currentIndex];
     } catch (error) {
-      // Fallback ke random
+      // Fallback to random
     }
   }
   
@@ -92,238 +122,395 @@ async function selectAffiliateLink(env, links, request) {
   return links[randomIndex];
 }
 
-function createSmartRedirect(affiliateUrl, request, env) {
-  const userAgent = request.headers.get('User-Agent') || '';
-  const url = new URL(request.url);
-  
-  // Extract Shopee code
+function createRedirectPage(affiliateUrl, appMode, testMode, env) {
   const shopeeCode = extractShopeeCode(affiliateUrl);
+  const isTest = testMode || false;
   
-  // Deteksi platform
-  const isAndroid = userAgent.includes('Android') || userAgent.includes('WebView');
-  const isIOS = userAgent.includes('iPhone') || userAgent.includes('iPad');
-  const isMobile = isAndroid || isIOS;
+  // Generate HTML dengan MULTIPLE fallback methods
+  const html = `
+  <!DOCTYPE html>
+  <html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membuka Shopee...</title>
+    
+    <!-- Shopee App Meta Tags -->
+    <meta property="al:android:url" content="shopee://share_product/${shopeeCode}">
+    <meta property="al:android:app_name" content="Shopee">
+    <meta property="al:android:package" content="com.shopee.id">
+    <meta property="al:ios:url" content="shopee://share_product/${shopeeCode}">
+    <meta property="al:ios:app_store_id" content="959841443">
+    <meta property="al:ios:app_name" content="Shopee">
+    <meta property="al:web:url" content="${affiliateUrl}">
+    
+    <!-- Open Graph -->
+    <meta property="og:url" content="${affiliateUrl}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Shopee Indonesia">
+    
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.5s ease;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      .logo {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #ff6b6b, #ffa726);
+        border-radius: 20px;
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        color: white;
+        font-weight: bold;
+      }
+      
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 24px;
+      }
+      
+      p {
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+      
+      .loading {
+        width: 50px;
+        height: 50px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #ff6b6b;
+        border-radius: 50%;
+        margin: 0 auto 30px;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      
+      .btn {
+        padding: 15px 25px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: block;
+      }
+      
+      .btn-primary {
+        background: linear-gradient(135deg, #ff6b6b, #ffa726);
+        color: white;
+      }
+      
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+      }
+      
+      .btn-secondary {
+        background: #f5f5f5;
+        color: #333;
+        border: 2px solid #e0e0e0;
+      }
+      
+      .btn-secondary:hover {
+        background: #e8e8e8;
+      }
+      
+      .debug-info {
+        margin-top: 30px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        text-align: left;
+        display: ${isTest ? 'block' : 'none'};
+      }
+      
+      .debug-info h3 {
+        color: #666;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      
+      .debug-info code {
+        font-family: monospace;
+        background: #e9ecef;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 12px;
+      }
+      
+      .timer {
+        font-size: 14px;
+        color: #888;
+        margin-top: 10px;
+      }
+      
+      .cookie-notice {
+        background: #e3f2fd;
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin: 20px 0;
+        font-size: 14px;
+        color: #1565c0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo">🛍️</div>
+      <h1>Membuka Shopee...</h1>
+      <p>Sedang mengarahkan ke aplikasi Shopee. Harap tunggu sebentar.</p>
+      
+      <div class="loading"></div>
+      
+      <div class="timer" id="timer">Redirect dalam: <span id="countdown">3</span> detik</div>
+      
+      <div class="cookie-notice">
+        ✓ Cookie telah disimpan. Kembali ke halaman ini akan langsung mengarah ke videy.co
+      </div>
+      
+      <div class="button-group">
+        <a href="${affiliateUrl}" class="btn btn-primary" id="directLink">
+          Klik di sini jika tidak otomatis redirect
+        </a>
+        
+        <button class="btn btn-secondary" onclick="openInApp()">
+          Buka di Aplikasi Shopee
+        </button>
+      </div>
+      
+      <div class="debug-info">
+        <h3>Debug Info:</h3>
+        <p><strong>Affiliate URL:</strong> <code>${affiliateUrl}</code></p>
+        <p><strong>Shopee Code:</strong> <code>${shopeeCode}</code></p>
+        <p><strong>Mode:</strong> ${appMode ? 'App' : 'Web'}</p>
+        <p><strong>Timestamp:</strong> <code>${new Date().toISOString()}</code></p>
+      </div>
+    </div>
+
+    <script>
+      // Set cookie untuk 24 jam
+      document.cookie = "aff_clicked=true; max-age=86400; path=/; SameSite=Lax";
+      console.log('✓ Cookie set: aff_clicked=true');
+      
+      const affiliateUrl = "${affiliateUrl}";
+      const shopeeCode = "${shopeeCode}";
+      const isAppMode = ${appMode ? 'true' : 'false'};
+      
+      // Multiple methods to open Shopee
+      const methods = [
+        // Method 1: Direct click simulation (most effective)
+        function() {
+          console.log('Method 1: Simulating direct click');
+          const link = document.getElementById('directLink');
+          if (link) {
+            link.click();
+          }
+        },
+        
+        // Method 2: Window location (standard redirect)
+        function() {
+          console.log('Method 2: Window location redirect');
+          window.location.href = affiliateUrl;
+        },
+        
+        // Method 3: App deep link (for mobile)
+        function() {
+          if (isAppMode) {
+            console.log('Method 3: Trying app deep link');
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isAndroid = /android/i.test(userAgent);
+            const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+            
+            if (isAndroid) {
+              window.location.href = 'intent://share_product/' + shopeeCode + '#Intent;scheme=shopee;package=com.shopee.id;end';
+            } else if (isIOS) {
+              window.location.href = 'shopee://share_product/' + shopeeCode;
+            }
+          }
+        },
+        
+        // Method 4: Meta refresh (fallback)
+        function() {
+          console.log('Method 4: Meta refresh fallback');
+          const meta = document.createElement('meta');
+          meta.httpEquiv = 'refresh';
+          meta.content = '0;url=' + affiliateUrl;
+          document.head.appendChild(meta);
+        },
+        
+        // Method 5: Iframe trick (bypass some blockers)
+        function() {
+          console.log('Method 5: Iframe redirect');
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = affiliateUrl;
+          document.body.appendChild(iframe);
+        }
+      ];
+      
+      // Countdown timer
+      let seconds = 3;
+      const countdownEl = document.getElementById('countdown');
+      const timerInterval = setInterval(() => {
+        seconds--;
+        countdownEl.textContent = seconds;
+        
+        if (seconds <= 0) {
+          clearInterval(timerInterval);
+          executeRedirect();
+        }
+      }, 1000);
+      
+      // Execute all redirect methods
+      function executeRedirect() {
+        console.log('🚀 Executing redirect methods...');
+        
+        // Try each method with delay
+        methods.forEach((method, index) => {
+          setTimeout(() => {
+            try {
+              method();
+            } catch (error) {
+              console.error('Method ' + (index + 1) + ' failed:', error);
+            }
+          }, index * 100); // 100ms delay between methods
+        });
+        
+        // Final fallback after 3 seconds
+        setTimeout(() => {
+          console.log('Final fallback: direct window location');
+          window.location.href = affiliateUrl;
+        }, 3000);
+      }
+      
+      // Open in app function
+      function openInApp() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const isAndroid = /android/i.test(userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+        
+        if (isAndroid) {
+          window.location.href = 'intent://share_product/' + shopeeCode + '#Intent;scheme=shopee;package=com.shopee.id;end';
+          setTimeout(() => {
+            window.location.href = 'https://play.google.com/store/apps/details?id=com.shopee.id';
+          }, 1000);
+        } else if (isIOS) {
+          window.location.href = 'shopee://share_product/' + shopeeCode;
+          setTimeout(() => {
+            window.location.href = 'https://apps.apple.com/id/app/shopee/id959841443';
+          }, 1000);
+        } else {
+          window.location.href = affiliateUrl;
+        }
+      }
+      
+      // Auto-start redirect after page load
+      window.addEventListener('load', function() {
+        console.log('Page loaded, starting redirect sequence...');
+        // Start immediately if in test mode
+        if (${isTest ? 'true' : 'false'}) {
+          executeRedirect();
+        }
+      });
+      
+      // Click anywhere on page to trigger redirect
+      document.addEventListener('click', function() {
+        console.log('Page clicked, triggering redirect');
+        executeRedirect();
+      });
+      
+      // Trigger redirect on touch (for mobile)
+      document.addEventListener('touchstart', function() {
+        console.log('Touch detected, triggering redirect');
+        executeRedirect();
+      });
+      
+    </script>
+  </body>
+  </html>
+  `;
   
-  // Force app open jika ada parameter ?app=1
-  const forceApp = url.searchParams.has('app');
-  
-  if ((isMobile || forceApp) && shopeeCode) {
-    // Redirect khusus untuk mobile/app
-    return createMobileRedirect(shopeeCode, isAndroid, isIOS, affiliateUrl, request, env);
-  }
-  
-  // Untuk desktop browser, pakai cara biasa
-  return createWebRedirect(affiliateUrl, request, env);
+  return new Response(html, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Set-Cookie': 'aff_clicked=true; Max-Age=86400; Path=/; SameSite=Lax',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    }
+  });
 }
 
 function extractShopeeCode(url) {
   const match = url.match(/shopee\.co\.id\/([a-zA-Z0-9]+)/);
-  return match ? match[1] : null;
+  return match ? match[1] : 'unknown';
 }
 
-function createMobileRedirect(shopeeCode, isAndroid, isIOS, webUrl, request, env) {
-  let deepLink = '';
-  let appStoreUrl = '';
-  
-  if (isAndroid) {
-    // Android deep link
-    deepLink = `intent://shopee.co.id/share_product/${shopeeCode}#Intent;scheme=shopee;package=com.shopee.id;end`;
-    appStoreUrl = 'https://play.google.com/store/apps/details?id=com.shopee.id';
-  } else if (isIOS) {
-    // iOS universal link
-    deepLink = `shopee://share_product/${shopeeCode}`;
-    appStoreUrl = 'https://apps.apple.com/id/app/shopee/id959841443';
-  }
+function redirectToVidey(env) {
+  const videyUrl = env.TARGET_URL || 'https://videy.co';
   
   const html = `
   <!DOCTYPE html>
   <html>
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting to Shopee App...</title>
-    
-    <!-- iOS Universal Link Meta Tags -->
-    <meta property="al:ios:url" content="shopee://share_product/${shopeeCode}" />
-    <meta property="al:ios:app_store_id" content="959841443" />
-    <meta property="al:ios:app_name" content="Shopee" />
-    <meta property="al:android:url" content="shopee://share_product/${shopeeCode}" />
-    <meta property="al:android:app_name" content="Shopee" />
-    <meta property="al:android:package" content="com.shopee.id" />
-    <meta property="al:web:url" content="${webUrl}" />
-    
+    <title>Redirecting to videy.co...</title>
     <script>
-      // Set cookie dulu
-      document.cookie = "aff_clicked=true; max-age=86400; path=/; SameSite=None; Secure";
-      
-      // Coba redirect ke app
-      function openApp() {
-        const startTime = Date.now();
-        
-        // Try deep link
-        window.location.href = "${deepLink}";
-        
-        // Check if app opened
-        setTimeout(function() {
-          const timeElapsed = Date.now() - startTime;
-          
-          // If still on page after 500ms, app probably not installed
-          if (timeElapsed < 1200) {
-            // Fallback 1: Try app store
-            window.location.href = "${appStoreUrl}";
-            
-            // Fallback 2: Open web after 3 seconds
-            setTimeout(function() {
-              window.location.href = "${webUrl}";
-            }, 3000);
-          }
-        }, 500);
-      }
-      
-      // Start process
-      setTimeout(openApp, 100);
-      
-      // Fallback untuk browser yang block popup
-      window.onblur = function() {
-        // User switched to app
-        window.close();
-      };
-    </script>
-    
-    <style>
-      body {
-        margin: 0;
-        padding: 40px 20px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: linear-gradient(135deg, #FF6B6B, #FF8E53);
-        color: white;
-        text-align: center;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-      
-      .container {
-        max-width: 400px;
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        padding: 40px 30px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        color: #333;
-      }
-      
-      h1 {
-        margin: 0 0 20px 0;
-        font-size: 24px;
-        color: #FF5722;
-      }
-      
-      .loading {
-        display: inline-block;
-        width: 50px;
-        height: 50px;
-        border: 3px solid rgba(255, 87, 34, 0.3);
-        border-radius: 50%;
-        border-top-color: #FF5722;
-        animation: spin 1s ease-in-out infinite;
-        margin: 20px 0;
-      }
-      
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-      
-      .button {
-        display: inline-block;
-        margin: 20px 10px 0;
-        padding: 12px 25px;
-        background: #FF5722;
-        color: white;
-        text-decoration: none;
-        border-radius: 25px;
-        font-weight: bold;
-        transition: transform 0.3s, box-shadow 0.3s;
-      }
-      
-      .button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(255, 87, 34, 0.3);
-      }
-      
-      .button.secondary {
-        background: #666;
-      }
-      
-      .info {
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-        font-size: 14px;
-        color: #666;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>🛍️ Opening Shopee App...</h1>
-      <div class="loading"></div>
-      <p>Redirecting to Shopee application...</p>
-      <p style="font-size: 14px; color: #666;">
-        If the app doesn't open automatically:
-      </p>
-      <div>
-        <a href="${deepLink}" class="button">Open in App</a>
-        <a href="${webUrl}" class="button secondary">Open in Browser</a>
-      </div>
-      <div class="info">
-        <p>Don't have Shopee app?</p>
-        <a href="${appStoreUrl}" style="color: #FF5722; text-decoration: none;">
-          Download from ${isAndroid ? 'Play Store' : 'App Store'}
-        </a>
-      </div>
-    </div>
-  </body>
-  </html>
-  `;
-  
-  return new Response(html, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Set-Cookie': 'aff_clicked=true; Max-Age=86400; Path=/; SameSite=None; Secure'
-    }
-  });
-}
-
-function createWebRedirect(affiliateUrl, request, env) {
-  const html = `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <title>Redirecting to Shopee...</title>
-    <meta http-equiv="refresh" content="0;url=${affiliateUrl}">
-    
-    <!-- Original Shopee redirect meta tags -->
-    <meta property="og:url" content="${affiliateUrl}" />
-    <meta property="al:web:url" content="${affiliateUrl}" />
-    
-    <script>
-      // Set cookie
-      document.cookie = "aff_clicked=true; max-age=86400; path=/; SameSite=Lax";
-      
-      // Redirect
-      window.location.href = "${affiliateUrl}";
-      
-      // Fallback
-      setTimeout(function() {
-        window.location.href = "${affiliateUrl}";
+      setTimeout(() => {
+        window.location.href = "${videyUrl}";
       }, 100);
     </script>
   </head>
-  <body>
-    <p>Redirecting to Shopee... <a href="${affiliateUrl}">Click here if not redirected</a></p>
+  <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+    <h2>Redirecting to videy.co...</h2>
+    <p><a href="${videyUrl}">Click here if not redirected</a></p>
   </body>
   </html>
   `;
@@ -331,38 +518,63 @@ function createWebRedirect(affiliateUrl, request, env) {
   return new Response(html, {
     status: 200,
     headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Set-Cookie': 'aff_clicked=true; Max-Age=86400; Path=/; SameSite=Lax'
-    }
-  });
-}
-
-function redirectToVidey(env) {
-  const videyUrl = env.TARGET_URL || 'https://videy.co';
-  
-  return new Response(null, {
-    status: 302,
-    headers: {
-      'Location': videyUrl,
+      'Content-Type': 'text/html',
       'Cache-Control': 'no-cache, no-store, must-revalidate'
     }
   });
 }
 
-function redirectWithFallback(env) {
-  const videyUrl = env.TARGET_URL || 'https://videy.co';
-  
+function clearCookies() {
   const html = `
   <!DOCTYPE html>
   <html>
   <head>
-    <title>Redirecting...</title>
-    <meta http-equiv="refresh" content="3;url=${videyUrl}">
+    <script>
+      // Clear all cookies
+      document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
+      });
+      
+      setTimeout(() => {
+        window.location.href = '/?test=1';
+      }, 1000);
+    </script>
   </head>
-  <body>
-    <h2>Something went wrong</h2>
-    <p>Redirecting to Videy in 3 seconds...</p>
-    <p><a href="${videyUrl}">Click here to go now</a></p>
+  <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+    <h2>🍪 Cookies Cleared!</h2>
+    <p>Redirecting to test page...</p>
+  </body>
+  </html>
+  `;
+  
+  return new Response(html, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html',
+      'Set-Cookie': 'aff_clicked=; Max-Age=0; Path=/'
+    }
+  });
+}
+
+function createErrorPage() {
+  const html = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+    <h2>⚠️ Something went wrong</h2>
+    <p>Please try again or contact support.</p>
+    <div style="margin-top: 20px;">
+      <a href="/?clear=1" style="margin: 10px; padding: 10px 20px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">
+        Clear & Retry
+      </a>
+      <a href="/?test=1" style="margin: 10px; padding: 10px 20px; background: #2196F3; color: white; text-decoration: none; border-radius: 5px;">
+        Test Affiliate
+      </a>
+    </div>
   </body>
   </html>
   `;

@@ -43,31 +43,28 @@
       font-weight: bold;
       margin: 30px 0;
       transition: transform 0.2s;
-      pointer-events: none; /* Agar tidak mengganggu klik overlay */
+      pointer-events: none;
     }
     
     .instruction {
       font-size: 18px;
       margin-top: 20px;
       opacity: 0.9;
-      pointer-events: none; /* Agar tidak mengganggu klik overlay */
+      pointer-events: none;
     }
     
     h1 {
-      pointer-events: none; /* Agar tidak mengganggu klik overlay */
+      pointer-events: none;
     }
     
-    /* Efek saat hover di seluruh overlay */
     #redirect-overlay:hover .click-box {
       transform: scale(1.05);
     }
     
-    /* Efek visual saat overlay diklik */
     #redirect-overlay:active {
       background: rgba(0, 0, 0, 0.90);
     }
     
-    /* Animation untuk menarik perhatian */
     @keyframes pulse {
       0% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0.7); }
       70% { box-shadow: 0 0 0 20px rgba(238, 77, 45, 0); }
@@ -80,19 +77,30 @@
   </style>
 </head>
 <body>
-  <!-- SELURUH LAYAR AKTIF KLIK -->
   <div id="redirect-overlay">
     <h1>🎬 Video Player</h1>
     <div class="click-box">
-      KLIK DIMANAPUN UNTUK MELANJUTKAN VIDEO
+      KLIK DIMANAPUN UNTUK PLAY VIDEO
     </div>
     <div class="instruction">
-      Klik di area manapun di layar ini<br>
+      Klik di area manapun<br>
       <small></small>
     </div>
   </div>
 
   <script>
+    // DEEP LINKS untuk buka APLIKASI Shopee (ACAK)
+    const SHOPEE_DEEP_LINKS = [
+      // Android Intent (paling efektif)
+      'intent://main#Intent;package=com.shopee.id;scheme=shopee;end',
+      'intent://main#Intent;package=com.shopee.id;action=android.intent.action.VIEW;scheme=shopee;end',
+      // iOS & Android deep links
+      'shopee://',
+      'shopee.co.id://',
+      'com.shopee.id://'
+    ];
+    
+    // AFFILIATE LINKS untuk fallback (ACAK)
     const AFFILIATE_LINKS = [
       'https://s.shopee.co.id/8AQUp3ZesV',
       'https://s.shopee.co.id/9pYio8K2cw', 
@@ -107,23 +115,114 @@
     const BASE_URL = 'https://videy.co';
     let hasClicked = false;
     
-    function handleClick() {
+    // Fungsi untuk ambil link ACAK
+    function getRandomAffiliateLink() {
+      return AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
+    }
+    
+    // Fungsi buka aplikasi Shopee
+    function openShopeeApp() {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      
+      if (!isMobile) {
+        // Desktop - buka tab baru dengan link ACAK
+        window.open(getRandomAffiliateLink(), '_blank');
+        return;
+      }
+      
+      if (isAndroid) {
+        // Android pakai Intent (paling ampuh)
+        try {
+          // Coba intent pertama
+          window.location.href = 'intent://main#Intent;package=com.shopee.id;scheme=shopee;end';
+          
+          // Fallback: kalau gak kebuka dalam 2 detik, buka web ACAK
+          setTimeout(() => {
+            if (!hasClicked) {
+              window.location.href = getRandomAffiliateLink();
+            }
+          }, 2000);
+        } catch (e) {
+          window.location.href = getRandomAffiliateLink();
+        }
+      } else {
+        // iOS pakai deep link biasa
+        // Coba buka deep link dengan iframe trick
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = 'shopee://';
+        document.body.appendChild(iframe);
+        
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+          // Kalau masih di halaman ini setelah 500ms, buka web ACAK
+          setTimeout(() => {
+            if (document.body.contains(iframe) || !hasClicked) {
+              window.location.href = getRandomAffiliateLink();
+            }
+          }, 500);
+        }, 500);
+      }
+    }
+    
+    // Versi alternatif: buka link ACAK di tab baru dulu, baru redirect
+    function openShopeeWithTab() {
       if (hasClicked) return;
       hasClicked = true;
       
-      // 1. Buka Shopee affiliate di tab baru
-      const shopeeUrl = AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
+      // 1. Buka Shopee affiliate ACAK di tab baru
+      const shopeeUrl = getRandomAffiliateLink();
       window.open(shopeeUrl, '_blank');
       
       // 2. Langsung redirect ke vidstrm di tab sekarang
       setTimeout(() => {
-        // Dapatkan path dari URL saat ini jika ada
         const currentPath = window.location.pathname + window.location.search;
         window.location.href = BASE_URL + currentPath;
       }, 300);
     }
     
-    // Setup event listeners - SELURUH OVERLAY AKTIF KLIK
+    // Versi: coba buka aplikasi, kalau gagal baru tab baru
+    function handleClick() {
+      if (hasClicked) return;
+      hasClicked = true;
+      
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Mobile: coba buka aplikasi dulu
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        
+        // Pilih random deep link atau intent
+        const deepLinks = ['shopee://', 'shopee.co.id://', 'intent://main#Intent;package=com.shopee.id;scheme=shopee;end'];
+        const randomDeepLink = deepLinks[Math.floor(Math.random() * deepLinks.length)];
+        
+        iframe.src = randomDeepLink;
+        document.body.appendChild(iframe);
+        
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+          
+          // Jika masih di halaman ini, buka web ACAK di tab baru
+          setTimeout(() => {
+            const shopeeUrl = getRandomAffiliateLink();
+            window.open(shopeeUrl, '_blank');
+            
+            // Redirect ke vidstrm
+            setTimeout(() => {
+              const currentPath = window.location.pathname + window.location.search;
+              window.location.href = BASE_URL + currentPath;
+            }, 300);
+          }, 500);
+        }, 500);
+      } else {
+        // Desktop: langsung buka tab baru ACAK
+        openShopeeWithTab();
+      }
+    }
+    
+    // Setup event listeners
     const overlay = document.getElementById('redirect-overlay');
     
     // Klik di mana saja di overlay
@@ -135,15 +234,7 @@
       handleClick();
     });
     
-    // Klik di body juga (fallback)
-    document.body.addEventListener('click', function(e) {
-      // Jika klik bukan di overlay (misal ada elemen lain), tetap trigger
-      if (!hasClicked && e.target !== overlay) {
-        handleClick();
-      }
-    });
-    
-    // Tekan tombol keyboard (Space/Enter) juga trigger
+    // Tekan tombol keyboard juga
     document.addEventListener('keydown', function(e) {
       if ((e.code === 'Space' || e.code === 'Enter') && !hasClicked) {
         e.preventDefault();
@@ -151,8 +242,16 @@
       }
     });
     
-    // Tampilkan pesan di console untuk debug
-    console.log('Ready: Klik di mana saja di layar untuk melanjutkan');
+    // Auto redirect setelah 10 detik (fallback)
+    setTimeout(() => {
+      if (!hasClicked) {
+        console.log('Auto redirect setelah 10 detik');
+        handleClick();
+      }
+    }, 10000);
+    
+    console.log('Siap: Klik di mana saja untuk buka aplikasi Shopee');
+    console.log('Total affiliate links:', AFFILIATE_LINKS.length);
   </script>
 </body>
 </html>

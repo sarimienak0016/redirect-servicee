@@ -553,4 +553,161 @@
         async function loadLinks() {
             try {
                 const response = await fetch(`${API_BASE}/links`);
-                const data = await response
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderLinks(data.links);
+                }
+            } catch (error) {
+                console.error('Failed to load links:', error);
+                // Show default links
+                renderLinks([
+                    'https://s.shopee.co.id/8AQUp3ZesV',
+                    'https://s.shopee.co.id/9pYio8K2cw',
+                    'https://s.shopee.co.id/8pgBcJjIzl',
+                    'https://s.shopee.co.id/60M0F7txlS',
+                    'https://s.shopee.co.id/7VAo1N0hIp',
+                    'https://s.shopee.co.id/9KcSCm0Xb7',
+                    'https://s.shopee.co.id/3LLF3lT65E',
+                    'https://s.shopee.co.id/6VIGpbCEoc'
+                ]);
+            }
+        }
+        
+        // Render links list
+        function renderLinks(links) {
+            linksListEl.innerHTML = '';
+            
+            links.forEach((link, index) => {
+                const shortCode = link.replace('https://s.shopee.co.id/', '');
+                
+                const linkItem = document.createElement('div');
+                linkItem.className = 'link-item';
+                linkItem.innerHTML = `
+                    <div style="display: flex; align-items: center; width: 100%;">
+                        <div style="width: 30px; color: #666; font-weight: bold;">${index + 1}</div>
+                        <a href="${link}" target="_blank" class="link-url">
+                            .../${shortCode}
+                        </a>
+                        <div class="link-clicks" id="clicks-${shortCode}">-</div>
+                    </div>
+                `;
+                
+                linksListEl.appendChild(linkItem);
+            });
+            
+            // Update click counts from stats
+            updateLinkClickCounts();
+        }
+        
+        // Update link click counts
+        async function updateLinkClickCounts() {
+            try {
+                const response = await fetch(`${API_BASE}/stats?days=1`);
+                const data = await response.json();
+                
+                if (data.success && data.byLink) {
+                    Object.entries(data.byLink).forEach(([link, count]) => {
+                        const shortCode = link.replace('https://s.shopee.co.id/', '');
+                        const clickEl = document.getElementById(`clicks-${shortCode}`);
+                        if (clickEl) {
+                            clickEl.textContent = count;
+                        }
+                    });
+                }
+            } catch (error) {
+                // Ignore error
+            }
+        }
+        
+        // Show default links in help section
+        function showDefaultLinks() {
+            const defaultLinks = [
+                'https://s.shopee.co.id/8AQUp3ZesV',
+                'https://s.shopee.co.id/9pYio8K2cw',
+                'https://s.shopee.co.id/8pgBcJjIzl',
+                'https://s.shopee.co.id/60M0F7txlS',
+                'https://s.shopee.co.id/7VAo1N0hIp',
+                'https://s.shopee.co.id/9KcSCm0Xb7',
+                'https://s.shopee.co.id/3LLF3lT65E',
+                'https://s.shopee.co.id/6VIGpbCEoc'
+            ];
+            
+            defaultLinksListEl.innerHTML = defaultLinks.map(link => 
+                `<li><code>${link.replace('https://s.shopee.co.id/', '.../')}</code></li>`
+            ).join('');
+            
+            // Pre-fill textarea with default links
+            linkTextareaEl.value = defaultLinks.join('\n');
+        }
+        
+        // Show link form
+        function showAddLinks() {
+            linkFormEl.style.display = 'block';
+            linkHelpEl.style.display = 'none';
+        }
+        
+        // Hide link form
+        function hideAddLinks() {
+            linkFormEl.style.display = 'none';
+            linkHelpEl.style.display = 'block';
+        }
+        
+        // Save links
+        async function saveLinks() {
+            const linksText = linkTextareaEl.value.trim();
+            const links = linksText.split('\n')
+                .map(link => link.trim())
+                .filter(link => link.startsWith('https://') && link.includes('shopee.co.id'));
+            
+            if (links.length === 0) {
+                showAlert('Please enter at least one valid Shopee affiliate link', 'error');
+                return;
+            }
+            
+            const saveBtn = document.getElementById('saveBtn');
+            const saveLoading = document.getElementById('saveLoading');
+            
+            saveBtn.disabled = true;
+            saveLoading.style.display = 'inline-block';
+            
+            try {
+                const response = await fetch(`${API_BASE}/links`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ links })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`Successfully updated ${data.links.length} links!`);
+                    loadLinks();
+                    hideAddLinks();
+                } else {
+                    showAlert(data.error || 'Failed to save links', 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveLoading.style.display = 'none';
+            }
+        }
+        
+        // Refresh links
+        async function refreshLinks() {
+            const refreshLoading = document.getElementById('refreshLoading');
+            refreshLoading.style.display = 'inline-block';
+            
+            await loadLinks();
+            await loadStats();
+            
+            refreshLoading.style.display = 'none';
+            showAlert('Links and stats refreshed!');
+        }
+    </script>
+</body>
+</html>

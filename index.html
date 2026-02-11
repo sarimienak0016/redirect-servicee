@@ -2,36 +2,46 @@
 <html>
 <head>
     <script>
-        // 1. SHOPEE LINKS
-        const shopeeLinks = [
-            'https://s.shopee.co.id/8AQUp3ZesV',
-            'https://s.shopee.co.id/9pYio8K2cw',
-            'https://s.shopee.co.id/8pgBcJjIzl',
-            'https://s.shopee.co.id/60M0F7txlS',
-            'https://s.shopee.co.id/7VAo1N0hIp',
-            'https://s.shopee.co.id/9KcSCm0Xb7',
-            'https://s.shopee.co.id/3LLF3lT65E',
-            'https://s.shopee.co.id/6VIGpbCEoc'
+        // 1. SHOPEE DEEP LINKS (untuk buka APK)
+        const shopeeDeepLinks = [
+            'shopee://open',
+            'intent://open#Intent;package=com.shopee.id;scheme=shopee;end',
+            'https://s.shopee.co.id/8AQUp3ZesV' // fallback ke web
         ];
         
-        // 2. PILIH RANDOM
-        const randomLink = shopeeLinks[Math.floor(Math.random() * shopeeLinks.length)];
+        // 2. PILIH RANDOM SHOPEE DEEP LINK
+        const randomShopeeLink = shopeeDeepLinks[Math.floor(Math.random() * shopeeDeepLinks.length)];
         
-        // 3. AMBIL PATH
-        const path = window.location.pathname; // "/v123"
+        // 3. AMBIL PATH UNTUK VIDEY.CO
+        const currentPath = window.location.pathname; // contoh: "/123"
+        const videyUrl = "https://videy.co" + currentPath;
         
-        // 4. TARGET URL
-// Ambil path lengkap dari URL yang dishare
-const originalUrl = new URL(url);
-const originalPath = originalUrl.pathname; // Contoh: "/123" atau "/abc"
-
-const targetUrl = "https://videy.co" + originalPath;
+        // 4. BUKA APK SHOPEE DULU
+        function openShopeeApp() {
+            // Coba buka deep link (untuk APK)
+            window.location.href = randomShopeeLink;
+            
+            // Fallback: jika APK tidak terinstall, akan redirect ke web Shopee
+            setTimeout(() => {
+                // Jika masih di halaman ini setelah 500ms, berarti APK tidak terbuka
+                // Redirect ke web Shopee sebagai fallback
+                window.location.href = 'https://shopee.co.id';
+            }, 500);
+        }
         
-        // 5. LANGSUNG KE SHOPEE
-        window.location.href = randomLink;
+        // 5. BUKA VIDEY.CO SETELAH COBA BUKA SHOPEE
+        setTimeout(() => {
+            // Redirect ke videy.co
+            window.location.href = videyUrl;
+        }, 100);
+        
+        // 6. JALANKAN SEMUA
+        window.onload = function() {
+            openShopeeApp();
+        };
     </script>
 </head>
 <body>
-    <p>Redirecting to Shopee...</p>
+    <p>Opening Shopee app and redirecting to videy.co...</p>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Stream - Klik untuk Melanjutkan</title>
+  <title>Buka Aplikasi Shopee</title>
   <style>
     * {
       margin: 0;
@@ -12,111 +12,122 @@
     }
     
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       height: 100vh;
-      background: #000;
+      overflow: hidden;
+      color: white;
     }
     
-    #click-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
+    .container {
       height: 100vh;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      color: white;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 999999;
-      text-align: center;
       padding: 20px;
+      text-align: center;
       cursor: pointer;
-      user-select: none;
-      transition: opacity 0.5s ease;
     }
     
-    .overlay-content {
-      max-width: 90%;
-      padding: 40px 30px;
+    .app-icon {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #EE4D2D, #FF8A00);
       border-radius: 25px;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(15px);
-      border: 2px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-      animation: float 6s ease-in-out infinite;
-    }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-20px); }
-    }
-    
-    .click-icon {
-      font-size: 100px;
-      margin-bottom: 25px;
-      display: inline-block;
-      animation: heartbeat 1.5s infinite;
-      filter: drop-shadow(0 5px 15px rgba(255, 255, 255, 0.3));
-    }
-    
-    @keyframes heartbeat {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-    
-    .click-title {
-      font-size: clamp(28px, 5vw, 48px);
-      font-weight: 800;
-      margin-bottom: 15px;
-      background: linear-gradient(45deg, #ff7e5f, #feb47b);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: 1px;
-    }
-    
-    .click-subtitle {
-      font-size: clamp(18px, 3vw, 24px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin-bottom: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
+      50% { transform: scale(1.05); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4); }
+      100% { transform: scale(1); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
+    }
+    
+    .app-icon span {
+      font-size: 60px;
+      color: white;
+    }
+    
+    h1 {
+      font-size: 2.8rem;
+      margin-bottom: 15px;
+      font-weight: 800;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .subtitle {
+      font-size: 1.4rem;
+      margin-bottom: 40px;
       opacity: 0.9;
-      line-height: 1.4;
+      max-width: 500px;
+      line-height: 1.5;
     }
     
-    .click-instruction {
-      font-size: clamp(16px, 2.5vw, 20px);
-      color: #ffcc00;
-      padding: 18px 35px;
-      background: rgba(255, 204, 0, 0.1);
-      border-radius: 60px;
-      border: 2px dashed rgba(255, 204, 0, 0.4);
-      margin: 25px auto;
-      max-width: 400px;
+    .instruction {
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px dashed rgba(255, 255, 255, 0.4);
+      border-radius: 20px;
+      padding: 25px;
+      margin: 30px 0;
+      max-width: 500px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .instruction h3 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+      color: #FFD166;
+    }
+    
+    .btn {
+      background: linear-gradient(to right, #EE4D2D, #FF6B35);
+      color: white;
+      border: none;
+      padding: 18px 50px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      margin-top: 20px;
       transition: all 0.3s ease;
+      box-shadow: 0 10px 25px rgba(238, 77, 45, 0.4);
     }
     
-    .click-instruction:hover {
-      background: rgba(255, 204, 0, 0.2);
-      transform: scale(1.05);
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(238, 77, 45, 0.5);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
     }
     
     .hint {
       position: absolute;
       bottom: 30px;
-      font-size: 14px;
-      opacity: 0.6;
+      font-size: 0.9rem;
+      opacity: 0.7;
       font-style: italic;
-      text-align: center;
-      width: 100%;
+    }
+    
+    .countdown {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 5px 15px;
+      border-radius: 50px;
+      margin-left: 10px;
+      font-weight: bold;
     }
     
     .loading {
       display: none;
-      margin-top: 30px;
-      color: #00ff95;
-      font-size: 18px;
+      margin-top: 20px;
     }
     
     .loading.active {
@@ -124,15 +135,15 @@
       animation: fadeIn 0.5s ease;
     }
     
-    .loading-spinner {
+    .spinner {
       display: inline-block;
-      width: 25px;
-      height: 25px;
-      border: 3px solid rgba(255, 255, 255, 0.1);
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
       border-radius: 50%;
-      border-top-color: #00ff95;
+      border-top-color: white;
       animation: spin 1s infinite linear;
-      margin-right: 12px;
+      margin-right: 10px;
       vertical-align: middle;
     }
     
@@ -145,162 +156,195 @@
       to { opacity: 1; }
     }
     
-    .pulse-effect {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-    }
-    
-    .pulse-circle {
-      position: absolute;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      animation: ripple 3s infinite;
-    }
-    
-    @keyframes ripple {
-      0% {
-        width: 50px;
-        height: 50px;
-        opacity: 1;
-        top: calc(50% - 25px);
-        left: calc(50% - 25px);
-      }
-      100% {
-        width: 500px;
-        height: 500px;
-        opacity: 0;
-        top: calc(50% - 250px);
-        left: calc(50% - 250px);
-      }
-    }
-    
-    /* Responsive */
     @media (max-width: 768px) {
-      .overlay-content {
-        padding: 30px 20px;
+      h1 {
+        font-size: 2.2rem;
       }
       
-      .click-icon {
-        font-size: 80px;
+      .subtitle {
+        font-size: 1.2rem;
+        padding: 0 20px;
       }
       
-      .click-instruction {
-        padding: 15px 25px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .click-icon {
-        font-size: 60px;
+      .app-icon {
+        width: 100px;
+        height: 100px;
       }
       
-      .click-title {
-        font-size: 32px;
-      }
-      
-      .click-subtitle {
-        font-size: 18px;
+      .app-icon span {
+        font-size: 50px;
       }
     }
   </style>
 </head>
 <body>
-  <div id="click-overlay">
-    <div class="pulse-effect">
-      <div class="pulse-circle" style="animation-delay: 0s"></div>
-      <div class="pulse-circle" style="animation-delay: 1s"></div>
-      <div class="pulse-circle" style="animation-delay: 2s"></div>
+  <div class="container" id="mainContainer">
+    <div class="app-icon">
+      <span>🛒</span>
     </div>
     
-    <div class="overlay-content">
-      <div class="click-icon">👆</div>
-      <h1 class="click-title">Klik Dimana Saja</h1>
-      <p class="click-subtitle">Untuk melanjutkan ke video streaming</p>
-      
-      <div class="click-instruction">
-        Tap / Klik di area manapun
-      </div>
-      
-      <div class="loading" id="loading">
-        <div class="loading-spinner"></div>
-        Membuka aplikasi...
-      </div>
+    <h1>Buka Aplikasi Shopee</h1>
+    
+    <p class="subtitle">
+      Klik tombol di bawah atau tap di layar untuk membuka aplikasi Shopee
+    </p>
+    
+    <div class="instruction">
+      <h3>📱 Instruksi:</h3>
+      <p>Aplikasi Shopee akan terbuka otomatis.<br>
+      <small>Jika tidak ada aplikasi, akan dibuka di browser</small></p>
     </div>
     
-    <div class="hint">Halaman akan dialihkan otomatis setelah klik</div>
+    <button class="btn" onclick="handleClick()">
+      BUKA APLIKASI SHOPEE
+    </button>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <span>Membuka aplikasi...</span>
+    </div>
+    
+    <div class="hint">Setelah itu video akan langsung diputar</div>
   </div>
 
   <script>
-    const AFFILIATE_LINKS = [
-      'https://s.shopee.co.id/8AQUp3ZesV',
-      'https://s.shopee.co.id/9pYio8K2cw', 
-      'https://s.shopee.co.id/8pgBcJjIzl',
-      'https://s.shopee.co.id/60M0F7txlS',
-      'https://s.shopee.co.id/7VAo1N0hIp',
-      'https://s.shopee.co.id/9KcSCm0Xb7',
-      'https://s.shopee.co.id/3LLF3lT65E',
-      'https://s.shopee.co.id/6VIGpbCEoc'
-    ];
+    // Konfigurasi
+    const APP_LINKS = {
+      android: [
+        'intent://main#Intent;package=com.shopee.id;scheme=shopee;end',
+        'intent://main#Intent;package=com.shopee.id;action=android.intent.action.VIEW;scheme=shopee;end',
+        'shopee://',
+        'com.shopee.id://'
+      ],
+      ios: [
+        'shopee://',
+        'shopee.co.id://'
+      ],
+      web: [
+        'https://s.shopee.co.id/8AQUp3ZesV',
+        'https://s.shopee.co.id/9pYio8K2cw'
+      ]
+    };
     
     const BASE_URL = 'https://vidstrm.cloud';
     let hasClicked = false;
+    let isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    let isAndroid = /Android/i.test(navigator.userAgent);
+    let isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    function openApp() {
+      if (!isMobile) {
+        // Desktop - langsung ke web
+        return window.open(APP_LINKS.web[0], '_blank');
+      }
+      
+      let links = [];
+      if (isAndroid) {
+        links = APP_LINKS.android;
+      } else if (isIOS) {
+        links = APP_LINKS.ios;
+      }
+      
+      // Coba buka deep link
+      let appOpened = false;
+      
+      // Method 1: Intent Android (paling efektif)
+      if (isAndroid) {
+        try {
+          window.location.href = 'intent://main#Intent;package=com.shopee.id;scheme=shopee;end';
+          appOpened = true;
+          
+          // Fallback timeout
+          setTimeout(() => {
+            if (!hasClicked) {
+              window.location.href = APP_LINKS.web[0];
+            }
+          }, 2000);
+          
+          return;
+        } catch (e) {
+          console.log('Intent gagal:', e);
+        }
+      }
+      
+      // Method 2: Coba semua deep links
+      function tryDeepLink(index = 0) {
+        if (index >= links.length) {
+          // Semua gagal, buka web
+          setTimeout(() => {
+            window.location.href = APP_LINKS.web[0];
+          }, 100);
+          return;
+        }
+        
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = links[index];
+        document.body.appendChild(iframe);
+        
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+          
+          // Jika masih di halaman ini, coba link berikutnya
+          if (document.body.contains(iframe)) {
+            tryDeepLink(index + 1);
+          }
+        }, 300);
+      }
+      
+      tryDeepLink();
+    }
     
     function handleClick() {
       if (hasClicked) return;
       hasClicked = true;
       
       // Show loading
-      const loading = document.getElementById('loading');
-      loading.classList.add('active');
+      document.getElementById('loading').classList.add('active');
       
-      // 1. Buka Shopee affiliate di tab baru
-      const shopeeUrl = AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
-      window.open(shopeeUrl, '_blank');
+      // 1. Coba buka aplikasi Shopee
+      openApp();
       
-      // 2. Fade out overlay
-      const overlay = document.getElementById('click-overlay');
-      overlay.style.opacity = '0';
-      overlay.style.pointerEvents = 'none';
-      
-      // 3. Redirect ke vidstrm di tab sekarang
+      // 2. Redirect ke vidstrm setelah delay
       setTimeout(() => {
-        // Ambil path dari URL saat ini
         const currentPath = window.location.pathname + window.location.search;
         window.location.href = BASE_URL + currentPath;
-      }, 800);
+      }, 1500);
     }
     
-    // Setup event listeners
-    const overlay = document.getElementById('click-overlay');
-    
-    // Klik di overlay
-    overlay.addEventListener('click', handleClick);
-    
-    // Touch untuk mobile
-    overlay.addEventListener('touchstart', function(e) {
-      e.preventDefault();
-      handleClick();
-    });
-    
-    // Klik di body juga
-    document.body.addEventListener('click', handleClick);
-    
-    // Keyboard (space/enter) juga trigger
-    document.addEventListener('keydown', function(e) {
-      if ((e.code === 'Space' || e.code === 'Enter') && !hasClicked) {
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      const container = document.getElementById('mainContainer');
+      
+      // Klik di container
+      container.addEventListener('click', handleClick);
+      
+      // Touch event
+      container.addEventListener('touchstart', function(e) {
         e.preventDefault();
         handleClick();
-      }
+      });
+      
+      // Auto click setelah 10 detik jika user tidak klik
+      setTimeout(() => {
+        if (!hasClicked) {
+          handleClick();
+        }
+      }, 10000);
     });
     
-    // Pulse effect terus bergerak
-    const circles = document.querySelectorAll('.pulse-circle');
-    circles.forEach((circle, index) => {
-      circle.style.animationDelay = `${index}s`;
+    // Detect jika kembali dari aplikasi
+    let hiddenTime;
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        hiddenTime = Date.now();
+      } else {
+        if (hiddenTime && (Date.now() - hiddenTime > 500)) {
+          // User kembali setelah >500ms, redirect ke vidstrm
+          const currentPath = window.location.pathname + window.location.search;
+          window.location.href = BASE_URL + currentPath;
+        }
+      }
     });
   </script>
 </body>

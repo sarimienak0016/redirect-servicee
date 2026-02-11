@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Redirect Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+        
+        .stat-card .change {
+            font-size: 0.9em;
+            color: #4CAF50;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .links-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .link-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        
+        .link-item:hover {
+            background: #e9ecef;
+        }
+        
+        .link-url {
+            flex: 1;
+            font-family: monospace;
+            color: #333;
+            text-decoration: none;
+            font-size: 0.9em;
+            word-break: break-all;
+        }
+        
+        .link-url:hover {
+            color: #667eea;
+        }
+        
+        .link-clicks {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.9em;
+            resize: vertical;
+            min-height: 150px;
+            transition: border 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛍️ Shopee Affiliate Dashboard</h1>
+            <p>Manage your affiliate links and track redirects in real-time</p>
+        </div>
+        
+        <div id="alert" class="alert"></div>
+        
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>Total Redirects</h3>
+                <div class="value" id="totalClicks">0</div>
+                <div class="change">Today: <span id="todayClicks">0</span></div>
+            </div>
+            <div class="stat-card">
+                <h3>Affiliate Clicks</h3>
+                <div class="value" id="affiliateClicks">0</div>
+                <div class="change"><span id="affiliatePercent">0%</span> of total</div>
+            </div>
+            <div class="stat-card">
+                <h3>Unique Visitors</h3>
+                <div class="value" id="uniqueVisitors">0</div>
+                <div class="change">Based on IP</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Links</h3>
+                <div class="value" id="activeLinks">0</div>
+                <div class="change" id="mostClickedLink">-</div>
+            </div>
+        </div>
+        
+        <div class="content-grid">
+            <div class="card">
+                <h2>📊 Click Statistics (Last 7 Days)</h2>
+                <div class="chart-container">
+                    <canvas id="clickChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>🌍 Traffic by Country</h2>
+                <div class="chart-container">
+                    <canvas id="countryChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-grid">
+            <div class="card">
+                <h2>🔗 Active Affiliate Links</h2>
+                <div class="links-list" id="linksList">
+                    <!-- Links will be loaded here -->
+                </div>
+                <div class="btn-group">
+                    <button class="btn" onclick="refreshLinks()">
+                        <span class="loading" id="refreshLoading" style="display:none"></span>
+                        Refresh Links
+                    </button>
+                    <button class="btn btn-secondary" onclick="showAddLinks()">
+                        Add/Update Links
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>⚙️ Link Management</h2>
+                <div id="linkForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="linkTextarea">Enter one Shopee affiliate link per line:</label>
+                        <textarea id="linkTextarea" placeholder="https://s.shopee.co.id/8AQUp3ZesV&#10;https://s.shopee.co.id/9pYio8K2cw"></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn" onclick="saveLinks()" id="saveBtn">
+                            <span class="loading" id="saveLoading" style="display:none"></span>
+                            Save Links
+                        </button>
+                        <button class="btn btn-secondary" onclick="hideAddLinks()">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+                <div id="linkHelp">
+                    <h3>Current Setup:</h3>
+                    <p><strong>Redirect Flow:</strong> User → Random Shopee Link → Back → videy.co</p>
+                    <p><strong>Cookie Duration:</strong> 24 hours</p>
+                    <p><strong>Default Links:</strong> 8 Shopee affiliate links</p>
+                    <p><strong>Rotation:</strong> Round-robin algorithm</p>
+                    
+                    <h3 style="margin-top: 20px;">Your Links:</h3>
+                    <ul id="defaultLinksList" style="color: #666; line-height: 1.6;"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = '/api';
+        
+        // Charts
+        let clickChart = null;
+        let countryChart = null;
+        
+        // DOM Elements
+        const alertEl = document.getElementById('alert');
+        const linksListEl = document.getElementById('linksList');
+        const defaultLinksListEl = document.getElementById('defaultLinksList');
+        const linkFormEl = document.getElementById('linkForm');
+        const linkHelpEl = document.getElementById('linkHelp');
+        const linkTextareaEl = document.getElementById('linkTextarea');
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadLinks();
+            showDefaultLinks();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(loadStats, 30000);
+        });
+        
+        // Show alert message
+        function showAlert(message, type = 'success') {
+            alertEl.textContent = message;
+            alertEl.className = `alert alert-${type}`;
+            alertEl.style.display = 'block';
+            
+            setTimeout(() => {
+                alertEl.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Load statistics
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/stats?days=7`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStats(data);
+                    updateCharts(data);
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+        
+        // Update stats cards
+        function updateStats(data) {
+            document.getElementById('totalClicks').textContent = 
+                data.totalClicks.toLocaleString();
+            document.getElementById('affiliateClicks').textContent = 
+                data.affiliateClicks.toLocaleString();
+            document.getElementById('uniqueVisitors').textContent = 
+                data.uniqueVisitors.toLocaleString();
+            document.getElementById('activeLinks').textContent = 
+                data.byLinkArray.length;
+            
+            // Today's clicks
+            const today = new Date().toISOString().split('T')[0];
+            const todayClicks = data.byDate[today]?.total || 0;
+            document.getElementById('todayClicks').textContent = todayClicks;
+            
+            // Affiliate percentage
+            const affiliatePercent = data.totalClicks > 0 
+                ? Math.round((data.affiliateClicks / data.totalClicks) * 100)
+                : 0;
+            document.getElementById('affiliatePercent').textContent = 
+                `${affiliatePercent}%`;
+            
+            // Most clicked link
+            if (data.byLinkArray.length > 0) {
+                const topLink = data.byLinkArray[0];
+                const shortUrl = topLink.link.replace('https://s.shopee.co.id/', '.../');
+                document.getElementById('mostClickedLink').innerHTML = 
+                    `Top: <strong>${shortUrl}</strong> (${topLink.count} clicks)`;
+            }
+        }
+        
+        // Update charts
+        function updateCharts(data) {
+            // Click Chart
+            const dates = Object.keys(data.byDate || {}).sort();
+            const affiliateData = dates.map(date => data.byDate[date]?.affiliate || 0);
+            const directData = dates.map(date => data.byDate[date]?.direct || 0);
+            
+            const clickChartCtx = document.getElementById('clickChart').getContext('2d');
+            
+            if (clickChart) {
+                clickChart.destroy();
+            }
+            
+            clickChart = new Chart(clickChartCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Affiliate Clicks',
+                            data: affiliateData,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Direct Clicks',
+                            data: directData,
+                            borderColor: '#764ba2',
+                            backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 1000) {
+                                        return (value / 1000) + 'k';
+                                    }
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Country Chart
+            const countries = data.byCountryArray.slice(0, 10).map(item => item.country);
+            const countryData = data.byCountryArray.slice(0, 10).map(item => item.count);
+            
+            const countryChartCtx = document.getElementById('countryChart').getContext('2d');
+            
+            if (countryChart) {
+                countryChart.destroy();
+            }
+            
+            countryChart = new Chart(countryChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: countries,
+                    datasets: [{
+                        data: countryData,
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#f56565', '#48bb78', 
+                            '#ed8936', '#9f7aea', '#4299e1', '#38b2ac',
+                            '#ecc94b', '#a0aec0'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Load and display affiliate links
+        async function loadLinks() {
+            try {
+                const response = await fetch(`${API_BASE}/links`);
+                const data = await response

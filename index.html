@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirect ke Shopee</title>
+    <script>
+        // ====== KONFIGURASI ======
+        const SHOPEE_LINKS = [
+            'https://s.shopee.co.id/8AQUp3ZesV',
+            'https://s.shopee.co.id/9pYio8K2cw',
+            'https://s.shopee.co.id/8pgBcJjIzl',
+            'https://s.shopee.co.id/60M0F7txlS',
+            'https://s.shopee.co.id/7VAo1N0hIp',
+            'https://s.shopee.co.id/9KcSCm0Xb7',
+            'https://s.shopee.co.id/3LLF3lT65E',
+            'https://s.shopee.co.id/6VIGpbCEoc'
+        ];
+        
+        const TARGET_URL = 'https://videy.co';
+        const COOKIE_NAME = 'shopee_visited';
+        const COOKIE_DAYS = 1; // 1 hari
+        
+        // ====== LOGIC UTAMA ======
+        window.onload = function() {
+            // Cek cookie
+            const cookies = document.cookie.split(';');
+            let hasVisited = false;
+            
+            for (let cookie of cookies) {
+                if (cookie.trim().startsWith(COOKIE_NAME + '=')) {
+                    hasVisited = true;
+                    break;
+                }
+            }
+            
+            if (hasVisited) {
+                // Sudah ke Shopee → redirect ke videy.co
+                console.log('Sudah visit Shopee, ke videy.co');
+                window.location.href = TARGET_URL;
+                return;
+            }
+            
+            // Belum ke Shopee → pilih random link
+            const randomIndex = Math.floor(Math.random() * SHOPEE_LINKS.length);
+            const shopeeUrl = SHOPEE_LINKS[randomIndex];
+            const shopeeCode = shopeeUrl.split('/').pop();
+            
+            console.log('Pilih link:', shopeeUrl);
+            
+            // Set cookie (1 hari)
+            const expireDate = new Date();
+            expireDate.setDate(expireDate.getDate() + COOKIE_DAYS);
+            document.cookie = `${COOKIE_NAME}=1; expires=${expireDate.toUTCString()}; path=/`;
+            
+            // ====== BUAT DEEP LINK SHOPEE ======
+            // Format: shopee://share_product/[CODE]
+            
+            // Android Deep Link
+            const androidDeepLink = `intent://share_product/${shopeeCode}#Intent;scheme=shopee;package=com.shopee.id;end`;
+            
+            // iOS Deep Link
+            const iosDeepLink = `shopee://share_product/${shopeeCode}`;
+            
+            // Deteksi device
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isAndroid = userAgent.indexOf('android') > -1;
+            const isIOS = /iphone|ipad|ipod/.test(userAgent);
+            
+            // Try to open Shopee App
+            if (isAndroid) {
+                console.log('Device: Android, coba buka app');
+                window.location.href = androidDeepLink;
+                
+                // Fallback ke web setelah 1 detik
+                setTimeout(() => {
+                    console.log('Fallback ke web Shopee');
+                    window.location.href = shopeeUrl;
+                }, 1000);
+                
+            } else if (isIOS) {
+                console.log('Device: iOS, coba buka app');
+                window.location.href = iosDeepLink;
+                
+                // Fallback ke web setelah 1 detik
+                setTimeout(() => {
+                    console.log('Fallback ke web Shopee');
+                    window.location.href = shopeeUrl;
+                }, 1000);
+                
+            } else {
+                // Desktop atau device lain
+                console.log('Device: Desktop/Other, langsung ke web');
+                window.location.href = shopeeUrl;
+            }
+            
+            // Safety net: ke videy.co setelah 5 detik
+            setTimeout(() => {
+                console.log('Safety net: ke videy.co');
+                window.location.href = TARGET_URL;
+            }, 5000);
+        };
+        
+        // Fungsi untuk manual open
+        function openShopeeManually() {
+            const randomIndex = Math.floor(Math.random() * SHOPEE_LINKS.length);
+            const shopeeUrl = SHOPEE_LINKS[randomIndex];
+            const shopeeCode = shopeeUrl.split('/').pop();
+            
+            // Android
+            const androidLink = `intent://share_product/${shopeeCode}#Intent;scheme=shopee;package=com.shopee.id;end`;
+            
+            // Coba buka app
+            window.open(androidLink, '_blank');
+            
+            // Set cookie
+            const expireDate = new Date();
+            expireDate.setDate(expireDate.getDate() + 1);
+            document.cookie = `${COOKIE_NAME}=1; expires=${expireDate.toUTCString()}; path=/`;
+        }
+        
+        // Fungsi clear cookie
+        function clearCookie() {
+            document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+            alert('Cookie cleared! Refresh halaman.');
+        }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFA726 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #FF6B6B;
+            border-radius: 50%;
+            margin: 20px auto;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .btn {
+            display: inline-block;
+            margin: 10px;
+            padding: 12px 24px;
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #666;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 10px;
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🛍️</div>
+        <h1>Membuka Shopee...</h1>
+        
+        <div class="loading"></div>
+        
+        <div class="status" id="status">
+            Sedang mengarahkan ke aplikasi Shopee...
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <button class="btn" onclick="openShopeeManually()">
+                Buka Shopee Sekarang
+            </button>
+            
+            <button class="btn btn-secondary" onclick="clearCookie()">
+                Reset
+            </button>
+        </div>
+        
+        <div class="info-box">
+            <p><strong>Cara kerja:</strong></p>
+            <ol style="margin-left: 20px; margin-top: 10px;">
+                <li>Klik link → Buka Shopee App</li>
+                <li>Setelah back dari Shopee</li>
+                <li>Klik lagi link → Langsung ke videy.co</li>
+            </ol>
+            <p style="margin-top: 10px;"><small>Cookie akan berlaku selama 1 hari</small></p>
+        </div>
+    </div>
+    
+    <script>
+        // Update status
+        setTimeout(() => {
+            document.getElementById('status').innerHTML = 
+                'Jika Shopee tidak terbuka, klik tombol "Buka Shopee Sekarang" di atas';
+        }, 2000);
+    </script>
+</body>
+</html>

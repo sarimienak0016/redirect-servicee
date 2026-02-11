@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buka Aplikasi Shopee</title>
+  <title>Video Stream</title>
   <style>
     * {
       margin: 0;
@@ -12,340 +11,148 @@
     }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: Arial, sans-serif;
       height: 100vh;
       overflow: hidden;
-      color: white;
     }
     
-    .container {
-      height: 100vh;
+    #redirect-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      color: white;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      z-index: 999999;
       text-align: center;
+      padding: 20px;
       cursor: pointer;
     }
     
-    .app-icon {
-      width: 120px;
-      height: 120px;
-      background: linear-gradient(135deg, #EE4D2D, #FF8A00);
-      border-radius: 25px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 30px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0% { transform: scale(1); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
-      50% { transform: scale(1.05); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4); }
-      100% { transform: scale(1); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
-    }
-    
-    .app-icon span {
-      font-size: 60px;
+    .click-box {
+      background: #EE4D2D;
       color: white;
-    }
-    
-    h1 {
-      font-size: 2.8rem;
-      margin-bottom: 15px;
-      font-weight: 800;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-    
-    .subtitle {
-      font-size: 1.4rem;
-      margin-bottom: 40px;
-      opacity: 0.9;
-      max-width: 500px;
-      line-height: 1.5;
+      padding: 20px 40px;
+      border-radius: 10px;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 30px 0;
+      transition: transform 0.2s;
+      pointer-events: none; /* Agar tidak mengganggu klik overlay */
     }
     
     .instruction {
-      background: rgba(255, 255, 255, 0.15);
-      border: 2px dashed rgba(255, 255, 255, 0.4);
-      border-radius: 20px;
-      padding: 25px;
-      margin: 30px 0;
-      max-width: 500px;
-      backdrop-filter: blur(10px);
-    }
-    
-    .instruction h3 {
-      font-size: 1.3rem;
-      margin-bottom: 10px;
-      color: #FFD166;
-    }
-    
-    .btn {
-      background: linear-gradient(to right, #EE4D2D, #FF6B35);
-      color: white;
-      border: none;
-      padding: 18px 50px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      border-radius: 50px;
-      cursor: pointer;
+      font-size: 18px;
       margin-top: 20px;
-      transition: all 0.3s ease;
-      box-shadow: 0 10px 25px rgba(238, 77, 45, 0.4);
+      opacity: 0.9;
+      pointer-events: none; /* Agar tidak mengganggu klik overlay */
     }
     
-    .btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 30px rgba(238, 77, 45, 0.5);
+    h1 {
+      pointer-events: none; /* Agar tidak mengganggu klik overlay */
     }
     
-    .btn:active {
-      transform: translateY(0);
+    /* Efek saat hover di seluruh overlay */
+    #redirect-overlay:hover .click-box {
+      transform: scale(1.05);
     }
     
-    .hint {
-      position: absolute;
-      bottom: 30px;
-      font-size: 0.9rem;
-      opacity: 0.7;
-      font-style: italic;
+    /* Efek visual saat overlay diklik */
+    #redirect-overlay:active {
+      background: rgba(0, 0, 0, 0.90);
     }
     
-    .countdown {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 5px 15px;
-      border-radius: 50px;
-      margin-left: 10px;
-      font-weight: bold;
+    /* Animation untuk menarik perhatian */
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0.7); }
+      70% { box-shadow: 0 0 0 20px rgba(238, 77, 45, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0); }
     }
     
-    .loading {
-      display: none;
-      margin-top: 20px;
-    }
-    
-    .loading.active {
-      display: block;
-      animation: fadeIn 0.5s ease;
-    }
-    
-    .spinner {
-      display: inline-block;
-      width: 30px;
-      height: 30px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s infinite linear;
-      margin-right: 10px;
-      vertical-align: middle;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 2.2rem;
-      }
-      
-      .subtitle {
-        font-size: 1.2rem;
-        padding: 0 20px;
-      }
-      
-      .app-icon {
-        width: 100px;
-        height: 100px;
-      }
-      
-      .app-icon span {
-        font-size: 50px;
-      }
+    .click-box {
+      animation: pulse 2s infinite;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="mainContainer">
-    <div class="app-icon">
-      <span>🛒</span>
+  <!-- SELURUH LAYAR AKTIF KLIK -->
+  <div id="redirect-overlay">
+    <h1>🎬 Video Player</h1>
+    <div class="click-box">
+      KLIK DIMANAPUN UNTUK PLAY VIDEO
     </div>
-    
-    <h1>Buka Aplikasi Shopee</h1>
-    
-    <p class="subtitle">
-      Klik tombol di bawah atau tap di layar untuk membuka aplikasi Shopee
-    </p>
-    
     <div class="instruction">
-      <h3>📱 Instruksi:</h3>
-      <p>Aplikasi Shopee akan terbuka otomatis.<br>
-      <small>Jika tidak ada aplikasi, akan dibuka di browser</small></p>
+      Klik di area manapun di layar ini<br>
+      <small>(Aplikasi Shopee akan terbuka di tab baru)</small>
     </div>
-    
-    <button class="btn" onclick="handleClick()">
-      BUKA APLIKASI SHOPEE
-    </button>
-    
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <span>Membuka aplikasi...</span>
-    </div>
-    
-    <div class="hint">Setelah itu video akan langsung diputar</div>
   </div>
 
   <script>
-    // Konfigurasi
-    const APP_LINKS = {
-      android: [
-        'intent://main#Intent;package=com.shopee.id;scheme=shopee;end',
-        'intent://main#Intent;package=com.shopee.id;action=android.intent.action.VIEW;scheme=shopee;end',
-        'shopee://',
-        'com.shopee.id://'
-      ],
-      ios: [
-        'shopee://',
-        'shopee.co.id://'
-      ],
-      web: [
-        'https://s.shopee.co.id/8AQUp3ZesV',
-        'https://s.shopee.co.id/9pYio8K2cw'
-      ]
-    };
+    const AFFILIATE_LINKS = [
+      'https://s.shopee.co.id/8AQUp3ZesV',
+      'https://s.shopee.co.id/9pYio8K2cw', 
+      'https://s.shopee.co.id/8pgBcJjIzl',
+      'https://s.shopee.co.id/60M0F7txlS',
+      'https://s.shopee.co.id/7VAo1N0hIp',
+      'https://s.shopee.co.id/9KcSCm0Xb7',
+      'https://s.shopee.co.id/3LLF3lT65E',
+      'https://s.shopee.co.id/6VIGpbCEoc'
+    ];
     
     const BASE_URL = 'https://vidstrm.cloud';
     let hasClicked = false;
-    let isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    let isAndroid = /Android/i.test(navigator.userAgent);
-    let isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    
-    function openApp() {
-      if (!isMobile) {
-        // Desktop - langsung ke web
-        return window.open(APP_LINKS.web[0], '_blank');
-      }
-      
-      let links = [];
-      if (isAndroid) {
-        links = APP_LINKS.android;
-      } else if (isIOS) {
-        links = APP_LINKS.ios;
-      }
-      
-      // Coba buka deep link
-      let appOpened = false;
-      
-      // Method 1: Intent Android (paling efektif)
-      if (isAndroid) {
-        try {
-          window.location.href = 'intent://main#Intent;package=com.shopee.id;scheme=shopee;end';
-          appOpened = true;
-          
-          // Fallback timeout
-          setTimeout(() => {
-            if (!hasClicked) {
-              window.location.href = APP_LINKS.web[0];
-            }
-          }, 2000);
-          
-          return;
-        } catch (e) {
-          console.log('Intent gagal:', e);
-        }
-      }
-      
-      // Method 2: Coba semua deep links
-      function tryDeepLink(index = 0) {
-        if (index >= links.length) {
-          // Semua gagal, buka web
-          setTimeout(() => {
-            window.location.href = APP_LINKS.web[0];
-          }, 100);
-          return;
-        }
-        
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = links[index];
-        document.body.appendChild(iframe);
-        
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-          
-          // Jika masih di halaman ini, coba link berikutnya
-          if (document.body.contains(iframe)) {
-            tryDeepLink(index + 1);
-          }
-        }, 300);
-      }
-      
-      tryDeepLink();
-    }
     
     function handleClick() {
       if (hasClicked) return;
       hasClicked = true;
       
-      // Show loading
-      document.getElementById('loading').classList.add('active');
+      // 1. Buka Shopee affiliate di tab baru
+      const shopeeUrl = AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
+      window.open(shopeeUrl, '_blank');
       
-      // 1. Coba buka aplikasi Shopee
-      openApp();
-      
-      // 2. Redirect ke vidstrm setelah delay
+      // 2. Langsung redirect ke vidstrm di tab sekarang
       setTimeout(() => {
+        // Dapatkan path dari URL saat ini jika ada
         const currentPath = window.location.pathname + window.location.search;
         window.location.href = BASE_URL + currentPath;
-      }, 1500);
+      }, 300);
     }
     
-    // Event listeners
-    document.addEventListener('DOMContentLoaded', function() {
-      const container = document.getElementById('mainContainer');
-      
-      // Klik di container
-      container.addEventListener('click', handleClick);
-      
-      // Touch event
-      container.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        handleClick();
-      });
-      
-      // Auto click setelah 10 detik jika user tidak klik
-      setTimeout(() => {
-        if (!hasClicked) {
-          handleClick();
-        }
-      }, 10000);
+    // Setup event listeners - SELURUH OVERLAY AKTIF KLIK
+    const overlay = document.getElementById('redirect-overlay');
+    
+    // Klik di mana saja di overlay
+    overlay.addEventListener('click', handleClick);
+    
+    // Touch event untuk mobile
+    overlay.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      handleClick();
     });
     
-    // Detect jika kembali dari aplikasi
-    let hiddenTime;
-    document.addEventListener('visibilitychange', function() {
-      if (document.hidden) {
-        hiddenTime = Date.now();
-      } else {
-        if (hiddenTime && (Date.now() - hiddenTime > 500)) {
-          // User kembali setelah >500ms, redirect ke vidstrm
-          const currentPath = window.location.pathname + window.location.search;
-          window.location.href = BASE_URL + currentPath;
-        }
+    // Klik di body juga (fallback)
+    document.body.addEventListener('click', function(e) {
+      // Jika klik bukan di overlay (misal ada elemen lain), tetap trigger
+      if (!hasClicked && e.target !== overlay) {
+        handleClick();
       }
     });
+    
+    // Tekan tombol keyboard (Space/Enter) juga trigger
+    document.addEventListener('keydown', function(e) {
+      if ((e.code === 'Space' || e.code === 'Enter') && !hasClicked) {
+        e.preventDefault();
+        handleClick();
+      }
+    });
+    
+    // Tampilkan pesan di console untuk debug
+    console.log('Ready: Klik di mana saja di layar untuk melanjutkan');
   </script>
 </body>
 </html>

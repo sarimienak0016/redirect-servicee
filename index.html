@@ -1,81 +1,57 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Redirect</title>
     <script>
-        // Auto redirect logic
-        function redirectToShopee() {
-            // Shopee codes
-            const codes = ['8AQUp3ZesV','9pYio8K2cw','8pgBcJjIzl','60M0F7txlS',
-                          '7VAo1N0hIp','9KcSCm0Xb7','3LLF3lT65E','6VIGpbCEoc'];
+        // Config
+        const SHOPEE_CODES = [
+            '8AQUp3ZesV',
+            '9pYio8K2cw', 
+            '8pgBcJjIzl',
+            '60M0F7txlS',
+            '7VAo1N0hIp',
+            '9KcSCm0Xb7',
+            '3LLF3lT65E',
+            '6VIGpbCEoc'
+        ];
+        
+        // TARGET URL dengan patch
+        const TARGET_URL = 'https://videy.co'; // Ganti dengan URL patch
+        
+        // Main function
+        function startRedirect() {
+            // Pilih random Shopee code
+            const randomCode = SHOPEE_CODES[Math.floor(Math.random() * SHOPEE_CODES.length)];
             
-            // Check if already visited Shopee
-            if (document.cookie.includes('shopee_visited=true')) {
-                // Redirect to final URL
-                window.location.href = 'https://videy.co';
-                return;
-            }
+            // ====== TRIK INTENT UNTUK SHOPEE APP ======
+            // Format: shopee://share_product/[CODE]
+            const shopeeAppLink = `shopee://share_product/${randomCode}`;
             
-            // Pick random code
-            const randomCode = codes[Math.floor(Math.random() * codes.length)];
-            const shopeeUrl = `https://s.shopee.co.id/${randomCode}`;
+            // ====== BUAT IFRAME UNTUK TRIGGER APP ======
+            // Ini trik untuk buka app dari browser
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = shopeeAppLink;
+            document.body.appendChild(iframe);
             
-            // Set cookie
-            document.cookie = 'shopee_visited=true; max-age=86400; path=/';
+            // ====== SET TIMEOUT UNTUK REDIRECT KE TARGET ======
+            // Setelah 2 detik (anggap app terbuka), redirect ke target
+            setTimeout(function() {
+                window.location.href = TARGET_URL;
+            }, 2000);
             
-            // ====== INI YANG PALING WORK ======
-            // Gunakan window.open() dengan parameter lengkap
-            
-            // Method 1: Try to open in new tab
-            const newTab = window.open(shopeeUrl, '_blank');
-            
-            // Method 2: If blocked, create hidden link and click
-            setTimeout(() => {
-                const link = document.createElement('a');
-                link.href = shopeeUrl;
-                link.target = '_blank';
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-            }, 300);
-            
-            // Method 3: Location change as last resort
-            setTimeout(() => {
-                window.location.href = shopeeUrl;
+            // ====== FALLBACK KE WEB SHOPEE ======
+            // Jika app tidak terbuka dalam 1 detik, buka web
+            setTimeout(function() {
+                window.location.href = `https://s.shopee.co.id/${randomCode}`;
             }, 1000);
         }
         
-        // Manual open function
-        function openShopeeNow() {
-            const codes = ['8AQUp3ZesV','9pYio8K2cw','8pgBcJjIzl','60M0F7txlS',
-                          '7VAo1N0hIp','9KcSCm0Xb7','3LLF3lT65E','6VIGpbCEoc'];
-            const randomCode = codes[Math.floor(Math.random() * codes.length)];
-            const shopeeUrl = `https://s.shopee.co.id/${randomCode}`;
-            
-            // Set cookie
-            document.cookie = 'shopee_visited=true; max-age=86400; path=/';
-            
-            // Use window.open with features
-            window.open(
-                shopeeUrl,
-                '_blank',
-                'noopener,noreferrer,location=yes,scrollbars=yes,status=yes'
-            );
-        }
-        
-        // Start on load
-        window.onload = function() {
-            setTimeout(redirectToShopee, 1000);
-        };
+        // Start on page load
+        window.onload = startRedirect;
     </script>
 </head>
-<body style="font-family:Arial;text-align:center;padding:50px;">
-    <h1>🛍️ Redirect ke Shopee</h1>
-    <p>Harap tunggu...</p>
-    <button onclick="openShopeeNow()" style="padding:10px 20px;background:#FF6B6B;color:white;border:none;border-radius:5px;">
-        Buka Shopee Sekarang
-    </button>
-    <p style="margin-top:20px;color:#666;">
-        Jika tidak otomatis, klik tombol di atas
-    </p>
+<body>
+    <p>Opening Shopee App...</p>
 </body>
 </html>

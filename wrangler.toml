@@ -1,0 +1,37 @@
+name = "shopee-affiliate-redirect"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+workers_dev = false
+
+[vars]
+TARGET_URL = "https://videy.co"
+API_TOKEN = "your-secure-token-here"  # Optional for API protection
+
+# Default affiliate links (will be overridden by KV if exists)
+AFFILIATE_LINKS = '''
+[
+  "https://s.shopee.co.id/8AQUp3ZesV",
+  "https://s.shopee.co.id/9pYio8K2cw",
+  "https://s.shopee.co.id/8pgBcJjIzl",
+  "https://s.shopee.co.id/60M0F7txlS",
+  "https://s.shopee.co.id/7VAo1N0hIp",
+  "https://s.shopee.co.id/9KcSCm0Xb7",
+  "https://s.shopee.co.id/3LLF3lT65E",
+  "https://s.shopee.co.id/6VIGpbCEoc"
+]
+'''
+
+# Cloudflare KV Namespaces (create these in Cloudflare Dashboard first)
+[[kv_namespaces]]
+binding = "AFFILIATE_KV"
+id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+[[kv_namespaces]]
+binding = "ANALYTICS_KV"
+id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+
+[[kv_namespaces]]
+binding = "CONFIG_KV"
+id = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"

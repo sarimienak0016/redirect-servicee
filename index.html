@@ -1,60 +1,237 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Stream</title>
+  <title>Video Stream - Klik untuk Melanjutkan</title>
   <style>
-    #redirect-overlay {
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      background: #000;
+    }
+    
+    #click-overlay {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       color: white;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 999999;
-      font-family: Arial, sans-serif;
       text-align: center;
       padding: 20px;
-    }
-    
-    .click-box {
-      background: #EE4D2D;
-      color: white;
-      padding: 20px 40px;
-      border-radius: 10px;
-      font-size: 24px;
-      font-weight: bold;
       cursor: pointer;
-      margin: 30px 0;
-      transition: transform 0.2s;
+      user-select: none;
+      transition: opacity 0.5s ease;
     }
     
-    .click-box:hover {
+    .overlay-content {
+      max-width: 90%;
+      padding: 40px 30px;
+      border-radius: 25px;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(15px);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    .click-icon {
+      font-size: 100px;
+      margin-bottom: 25px;
+      display: inline-block;
+      animation: heartbeat 1.5s infinite;
+      filter: drop-shadow(0 5px 15px rgba(255, 255, 255, 0.3));
+    }
+    
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    
+    .click-title {
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      margin-bottom: 15px;
+      background: linear-gradient(45deg, #ff7e5f, #feb47b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 1px;
+    }
+    
+    .click-subtitle {
+      font-size: clamp(18px, 3vw, 24px);
+      margin-bottom: 30px;
+      opacity: 0.9;
+      line-height: 1.4;
+    }
+    
+    .click-instruction {
+      font-size: clamp(16px, 2.5vw, 20px);
+      color: #ffcc00;
+      padding: 18px 35px;
+      background: rgba(255, 204, 0, 0.1);
+      border-radius: 60px;
+      border: 2px dashed rgba(255, 204, 0, 0.4);
+      margin: 25px auto;
+      max-width: 400px;
+      transition: all 0.3s ease;
+    }
+    
+    .click-instruction:hover {
+      background: rgba(255, 204, 0, 0.2);
       transform: scale(1.05);
     }
     
-    .instruction {
+    .hint {
+      position: absolute;
+      bottom: 30px;
+      font-size: 14px;
+      opacity: 0.6;
+      font-style: italic;
+      text-align: center;
+      width: 100%;
+    }
+    
+    .loading {
+      display: none;
+      margin-top: 30px;
+      color: #00ff95;
       font-size: 18px;
-      margin-top: 20px;
-      opacity: 0.9;
+    }
+    
+    .loading.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 25px;
+      height: 25px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top-color: #00ff95;
+      animation: spin 1s infinite linear;
+      margin-right: 12px;
+      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .pulse-effect {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+    
+    .pulse-circle {
+      position: absolute;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      animation: ripple 3s infinite;
+    }
+    
+    @keyframes ripple {
+      0% {
+        width: 50px;
+        height: 50px;
+        opacity: 1;
+        top: calc(50% - 25px);
+        left: calc(50% - 25px);
+      }
+      100% {
+        width: 500px;
+        height: 500px;
+        opacity: 0;
+        top: calc(50% - 250px);
+        left: calc(50% - 250px);
+      }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .overlay-content {
+        padding: 30px 20px;
+      }
+      
+      .click-icon {
+        font-size: 80px;
+      }
+      
+      .click-instruction {
+        padding: 15px 25px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .click-icon {
+        font-size: 60px;
+      }
+      
+      .click-title {
+        font-size: 32px;
+      }
+      
+      .click-subtitle {
+        font-size: 18px;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="redirect-overlay">
-    <h1>🎬 Video Player</h1>
-    <div class="click-box" id="clickBtn">
-      KLIK UNTUK PLAY VIDEO
+  <div id="click-overlay">
+    <div class="pulse-effect">
+      <div class="pulse-circle" style="animation-delay: 0s"></div>
+      <div class="pulse-circle" style="animation-delay: 1s"></div>
+      <div class="pulse-circle" style="animation-delay: 2s"></div>
     </div>
-    <div class="instruction">
-      Klik tombol di atas untuk membuka video<br>
-      <small></small>
+    
+    <div class="overlay-content">
+      <div class="click-icon">👆</div>
+      <h1 class="click-title">Klik Dimana Saja</h1>
+      <p class="click-subtitle">Untuk melanjutkan ke video streaming</p>
+      
+      <div class="click-instruction">
+        Tap / Klik di area manapun
+      </div>
+      
+      <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        Membuka aplikasi...
+      </div>
     </div>
+    
+    <div class="hint">Halaman akan dialihkan otomatis setelah klik</div>
   </div>
 
   <script>
@@ -69,31 +246,61 @@
       'https://s.shopee.co.id/6VIGpbCEoc'
     ];
     
-    const BASE_URL = 'https://videy.co';
+    const BASE_URL = 'https://vidstrm.cloud';
     let hasClicked = false;
     
     function handleClick() {
       if (hasClicked) return;
       hasClicked = true;
       
+      // Show loading
+      const loading = document.getElementById('loading');
+      loading.classList.add('active');
+      
       // 1. Buka Shopee affiliate di tab baru
       const shopeeUrl = AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
       window.open(shopeeUrl, '_blank');
       
-      // 2. Langsung redirect ke vidstrm di tab sekarang
+      // 2. Fade out overlay
+      const overlay = document.getElementById('click-overlay');
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+      
+      // 3. Redirect ke vidstrm di tab sekarang
       setTimeout(() => {
-        // Dapatkan path dari URL saat ini jika ada
+        // Ambil path dari URL saat ini
         const currentPath = window.location.pathname + window.location.search;
         window.location.href = BASE_URL + currentPath;
-      }, 300);
+      }, 800);
     }
     
     // Setup event listeners
-    document.getElementById('clickBtn').addEventListener('click', handleClick);
+    const overlay = document.getElementById('click-overlay');
     
-    // Klik overlay juga akan trigger
-    document.getElementById('redirect-overlay').addEventListener('click', function(e) {
-      if (e.target === this) handleClick();
+    // Klik di overlay
+    overlay.addEventListener('click', handleClick);
+    
+    // Touch untuk mobile
+    overlay.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      handleClick();
+    });
+    
+    // Klik di body juga
+    document.body.addEventListener('click', handleClick);
+    
+    // Keyboard (space/enter) juga trigger
+    document.addEventListener('keydown', function(e) {
+      if ((e.code === 'Space' || e.code === 'Enter') && !hasClicked) {
+        e.preventDefault();
+        handleClick();
+      }
+    });
+    
+    // Pulse effect terus bergerak
+    const circles = document.querySelectorAll('.pulse-circle');
+    circles.forEach((circle, index) => {
+      circle.style.animationDelay = `${index}s`;
     });
   </script>
 </body>

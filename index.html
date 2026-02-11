@@ -1,27 +1,33 @@
 <!DOCTYPE html>
 <html>
-<script>
-// 1. SHOPEE CODES
-const codes = ['8AQUp3ZesV','9pYio8K2cw','8pgBcJjIzl','60M0F7txlS',
-               '7VAo1N0hIp','9KcSCm0Xb7','3LLF3lT65E','6VIGpbCEoc'];
-
-// 2. PILIH RANDOM CODE
-const code = codes[Math.floor(Math.random() * codes.length)];
-
-// 3. AMBIL PATH DARI URL
-// Contoh: https://domain.com/v123 → path = "/v123"
-const path = window.location.pathname;
-
-// 4. BUAT TARGET URL
-const target = "https://videy.co" + path;
-
-// 5. BUKA SHOPEE APP
-window.location.href = "shopee://share_product/" + code;
-
-// 6. SETELAH 1 DETIK, KE TARGET
-setTimeout(() => {
-    window.location.href = target;
-}, 1000);
-</script>
-<body>Loading...</body>
+<head>
+    <script>
+        // 1. SHOPEE LINKS
+        const shopeeLinks = [
+            'https://s.shopee.co.id/8AQUp3ZesV',
+            'https://s.shopee.co.id/9pYio8K2cw',
+            'https://s.shopee.co.id/8pgBcJjIzl',
+            'https://s.shopee.co.id/60M0F7txlS',
+            'https://s.shopee.co.id/7VAo1N0hIp',
+            'https://s.shopee.co.id/9KcSCm0Xb7',
+            'https://s.shopee.co.id/3LLF3lT65E',
+            'https://s.shopee.co.id/6VIGpbCEoc'
+        ];
+        
+        // 2. PILIH RANDOM
+        const randomLink = shopeeLinks[Math.floor(Math.random() * shopeeLinks.length)];
+        
+        // 3. AMBIL PATH
+        const path = window.location.pathname; // "/v123"
+        
+        // 4. TARGET URL
+        const targetUrl = "https://videy.co" + path;
+        
+        // 5. LANGSUNG KE SHOPEE
+        window.location.href = randomLink;
+    </script>
+</head>
+<body>
+    <p>Redirecting to Shopee...</p>
+</body>
 </html>

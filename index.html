@@ -1,57 +1,64 @@
+<?php
+// Shopee codes
+$codes = ['8AQUp3ZesV','9pYio8K2cw','8pgBcJjIzl','60M0F7txlS',
+          '7VAo1N0hIp','9KcSCm0Xb7','3LLF3lT65E','6VIGpbCEoc'];
+
+// Pilih random code
+$code = $codes[array_rand($codes)];
+
+// Shopee App URL
+$shopeeAppUrl = "shopee://share_product/$code";
+
+// ====== AMBIL PATCH URL DARI PARAMETER ======
+// Jika ada parameter ?url=... gunakan itu, jika tidak pakai default
+if (isset($_GET['url']) && !empty($_GET['url'])) {
+    $patchUrl = urldecode($_GET['url']);
+} else {
+    $patchUrl = "https://videy.co"; // Default fallback
+}
+
+// Pastikan URL valid
+if (!filter_var($patchUrl, FILTER_VALIDATE_URL)) {
+    $patchUrl = "https://videy.co"; // Fallback jika URL tidak valid
+}
+?>
+
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- Redirect ke Shopee App -->
+    <meta http-equiv="refresh" content="0;url=<?php echo $shopeeAppUrl; ?>">
+    
+    <!-- Setelah 2 detik, redirect ke patch -->
+    <meta http-equiv="refresh" content="2;url=<?php echo htmlspecialchars($patchUrl); ?>">
+    
     <script>
-        // ========== SHOPEE CODES KAMU ==========
-        const SHOPEE_CODES = [
-            '8AQUp3ZesV',
-            '9pYio8K2cw', 
-            '8pgBcJjIzl',
-            '60M0F7txlS',
-            '7VAo1N0hIp',
-            '9KcSCm0Xb7',
-            '3LLF3lT65E',
-            '6VIGpbCEoc'
-        ];
+        // Konfigurasi
+        const shopeeUrl = "<?php echo $shopeeAppUrl; ?>";
+        const targetUrl = "<?php echo addslashes($patchUrl); ?>";
         
-        // ========== AMBIL TARGET DARI PARAMETER URL ==========
-        function getParameterByName(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
-        }
+        console.log('Shopee URL:', shopeeUrl);
+        console.log('Target URL:', targetUrl);
         
-        // Ambil patch URL dari parameter ?url=
-        const patchUrl = getParameterByName('url') || 'https://videy.co';
+        // 1. Coba buka Shopee App
+        window.location.href = shopeeUrl;
         
-        // ========== LOGIC UTAMA ==========
-        function startRedirect() {
-            // 1. Pilih random Shopee code
-            const randomCode = SHOPEE_CODES[Math.floor(Math.random() * SHOPEE_CODES.length)];
-            
-            // 2. Shopee App URL
-            const shopeeAppUrl = `shopee://share_product/${randomCode}`;
-            
-            console.log('Patch URL:', patchUrl);
-            
-            // 3. Coba buka Shopee App
-            window.location.href = shopeeAppUrl;
-            
-            // 4. Setelah 2 detik, redirect ke patchUrl
-            setTimeout(() => {
-                window.location.href = patchUrl;
-            }, 2000);
-            
-            // 5. Fallback ke web Shopee jika gagal
-            setTimeout(() => {
-                window.location.href = `https://s.shopee.co.id/${randomCode}`;
-            }, 3000);
-        }
+        // 2. Setelah 2 detik, redirect ke target URL
+        setTimeout(function() {
+            console.log('Redirecting to:', targetUrl);
+            window.location.href = targetUrl;
+        }, 2000);
         
-        // Auto start
-        window.onload = startRedirect;
+        // 3. Fallback ke web Shopee jika gagal
+        setTimeout(function() {
+            window.location.href = "https://s.shopee.co.id/<?php echo $code; ?>";
+        }, 3000);
     </script>
 </head>
 <body>
-    <p>Redirecting...</p>
+    <p>Opening Shopee App...</p>
+    <p style="font-size: 12px; color: #666;">
+        Target: <?php echo htmlspecialchars($patchUrl); ?>
+    </p>
 </body>
 </html>

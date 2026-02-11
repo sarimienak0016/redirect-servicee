@@ -2,26 +2,33 @@
 <html>
 <head>
     <script>
-        // 1. SETUP
-        const originalPath = window.location.pathname + window.location.search;
-        const targetUrl = "https://videy.co" + originalPath;
-        const shopeeLink = "https://s.shopee.co.id/8AQUp3ZesV";
+        // AMBIL PATH
+        const path = window.location.pathname + window.location.search;
+        const videyUrl = "https://videy.co" + path;
         
-        // 2. SIMPAN STATE DI localStorage
-        localStorage.setItem('fromShopee', 'true');
-        localStorage.setItem('targetUrl', targetUrl);
-        
-        // 3. BUKA SHOPEE DI TAB BARU
-        window.open(shopeeLink, '_blank');
-        
-        // 4. REDIRECT SETELAH 500ms
-        setTimeout(function() {
-            window.location.href = targetUrl;
-        }, 500);
-        
+        // CEK APAKAH SUDAH DARI SHOPEE
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('fromShopee') === 'true') {
+            // LANGSUNG KE VVIDEY.CO
+            window.location.href = videyUrl;
+        } else {
+            // BUAT URL UNTUK BALIK KE SINI
+            const returnUrl = window.location.origin + window.location.pathname + 
+                            '?fromShopee=true' + window.location.search;
+            
+            // BUKA SHOPEE DENGAN PARAMETER REDIRECT
+            const shopeeUrl = "https://s.shopee.co.id/8AQUp3ZesV?redirect=" + 
+                            encodeURIComponent(returnUrl);
+            
+            // BUKA SHOPEE
+            window.location.href = shopeeUrl;
+            
+            // FALLBACK: JIKA GAK BISA BUKA APP, LANGSUNG KE VVIDEY.CO
+            setTimeout(function() {
+                window.location.href = videyUrl;
+            }, 2000);
+        }
     </script>
 </head>
-<body>
-    <!-- Kosong -->
-</body>
+<body></body>
 </html>

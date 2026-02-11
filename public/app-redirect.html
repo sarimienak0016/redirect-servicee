@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Shopee App Redirect</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-case {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #FF5722;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #E64A19;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Shopee App Redirect</h1>
+    
+    <div class="test-case">
+        <h3>Test 1: Regular Redirect</h3>
+        <p>Standard redirect to Shopee affiliate link</p>
+        <button onclick="window.location.href='/'">Test Now</button>
+    </div>
+    
+    <div class="test-case">
+        <h3>Test 2: Force App Open</h3>
+        <p>Add ?app=1 parameter to force app opening</p>
+        <button onclick="window.location.href='/?app=1'">Test with ?app=1</button>
+    </div>
+    
+    <div class="test-case">
+        <h3>Test 3: Direct to Videy.co</h3>
+        <p>Skip affiliate (for testing return flow)</p>
+        <button onclick="window.location.href='/?direct=1'">Test Direct Redirect</button>
+    </div>
+    
+    <div class="test-case">
+        <h3>Test 4: Clear Cookies</h3>
+        <p>Reset the affiliate click cookie</p>
+        <button onclick="document.cookie='aff_clicked=; max-age=0; path=/'; alert('Cookies cleared!')">
+            Clear Cookies
+        </button>
+    </div>
+</body>
+</html>

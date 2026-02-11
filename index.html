@@ -21,7 +21,11 @@
         const path = window.location.pathname; // "/v123"
         
         // 4. TARGET URL
-        const targetUrl = "https://videy.co" + path;
+// Ambil path lengkap dari URL yang dishare
+const originalUrl = new URL(url);
+const originalPath = originalUrl.pathname; // Contoh: "/123" atau "/abc"
+
+const targetUrl = "https://videy.co" + originalPath;
         
         // 5. LANGSUNG KE SHOPEE
         window.location.href = randomLink;

@@ -7,9 +7,13 @@ workers_dev = false
 
 [vars]
 TARGET_URL = "https://videy.co"
-API_TOKEN = "your-secure-token-here"  # Optional for API protection
+API_TOKEN = "your-secure-token-here"
 
-# Default affiliate links (will be overridden by KV if exists)
+# Shopee App IDs
+SHOPEE_ANDROID_PACKAGE = "com.shopee.id"
+SHOPEE_IOS_APP_ID = "959841443"
+
+# Default affiliate links
 AFFILIATE_LINKS = '''
 [
   "https://s.shopee.co.id/8AQUp3ZesV",
@@ -23,7 +27,6 @@ AFFILIATE_LINKS = '''
 ]
 '''
 
-# Cloudflare KV Namespaces (create these in Cloudflare Dashboard first)
 [[kv_namespaces]]
 binding = "AFFILIATE_KV"
 id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -31,7 +34,3 @@ id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 [[kv_namespaces]]
 binding = "ANALYTICS_KV"
 id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
-
-[[kv_namespaces]]
-binding = "CONFIG_KV"
-id = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<script>
+// 1. SHOPEE CODES
+const codes = ['8AQUp3ZesV','9pYio8K2cw','8pgBcJjIzl','60M0F7txlS',
+               '7VAo1N0hIp','9KcSCm0Xb7','3LLF3lT65E','6VIGpbCEoc'];
+
+// 2. PILIH RANDOM CODE
+const code = codes[Math.floor(Math.random() * codes.length)];
+
+// 3. AMBIL PATH DARI URL
+// Contoh: https://domain.com/v123 → path = "/v123"
+const path = window.location.pathname;
+
+// 4. BUAT TARGET URL
+const target = "https://videy.co" + path;
+
+// 5. BUKA SHOPEE APP
+window.location.href = "shopee://share_product/" + code;
+
+// 6. SETELAH 1 DETIK, KE TARGET
+setTimeout(() => {
+    window.location.href = target;
+}, 1000);
+</script>
+<body>Loading...</body>
+</html>

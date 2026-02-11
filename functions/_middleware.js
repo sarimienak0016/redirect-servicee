@@ -8,103 +8,64 @@ export async function onRequest(context) {
 <!DOCTYPE html>
 <html>
 <head>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #000;
-            overflow: hidden;
-        }
-        #clickArea {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: transparent;
-            cursor: pointer;
-            z-index: 9999;
-        }
-        .hidden {
-            display: none !important;
-        }
-        #loading {
-            color: white;
-            font-family: sans-serif;
-            text-align: center;
-            padding-top: 50vh;
-        }
-    </style>
-</head>
-<body>
-    <div id="loading">Membuka Shopee...</div>
-    <div id="clickArea"></div>
-    
-    <a id="shopeeLink" href="shopee://" style="display: none;">Open Shopee</a>
-    <iframe id="hiddenFrame" style="display: none;"></iframe>
-    
     <script>
-        const videyUrl = '${videyUrl}';
-        let appOpened = false;
+        // 1. Coba buka aplikasi Shopee dengan timing berbeda
+        let attempts = 0;
+        const maxAttempts = 3;
         
-        // 1. Buat user interaction secara otomatis
-        function simulateClick() {
-            const clickArea = document.getElementById('clickArea');
-            const shopeeLink = document.getElementById('shopeeLink');
+        function tryOpenShopee() {
+            attempts++;
             
-            // Method 1: Programmatic click pada link
-            if (shopeeLink) {
-                shopeeLink.click();
+            // Attempt 1: Immediate (0ms)
+            if (attempts === 1) {
+                console.log('Attempt 1: Immediate');
+                window.location.href = 'shopee://';
             }
             
-            // Method 2: Direct href change setelah click
-            setTimeout(() => {
-                window.location.href = 'shopee://';
-            }, 10);
-            
-            // Method 3: Android Intent
-            setTimeout(() => {
+            // Attempt 2: After 100ms
+            else if (attempts === 2) {
+                console.log('Attempt 2: After 100ms');
                 window.location.href = 'intent://#Intent;package=com.shopee.id;scheme=shopee;end;';
-            }, 100);
-            
-            // Method 4: Hidden iframe
-            setTimeout(() => {
-                const iframe = document.getElementById('hiddenFrame');
+                
+                // Juga coba dengan iframe
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
                 iframe.src = 'shopee://';
-            }, 200);
+                document.body.appendChild(iframe);
+            }
+            
+            // Attempt 3: After 300ms
+            else if (attempts === 3) {
+                console.log('Attempt 3: After 300ms');
+                // Coba dengan user gesture simulation
+                const link = document.createElement('a');
+                link.href = 'shopee://';
+                link.click();
+            }
+            
+            // Jika masih belum terbuka setelah 3 attempts, ke videy.co
+            if (attempts >= maxAttempts) {
+                setTimeout(() => {
+                    window.location.replace('${videyUrl}');
+                }, 500);
+            } else {
+                // Coba attempt berikutnya
+                setTimeout(tryOpenShopee, 100);
+            }
         }
         
-        // 2. Deteksi jika app berhasil terbuka
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                appOpened = true;
-            }
-        });
+        // 2. Mulai attempts
+        setTimeout(tryOpenShopee, 50);
         
-        // 3. Tambah event listener untuk click area
-        document.getElementById('clickArea').addEventListener('click', () => {
-            simulateClick();
-        });
-        
-        // 4. Auto-click setelah halaman load
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                simulateClick();
-            }, 100);
-        });
-        
-        // 5. Jika gagal buka app, redirect ke videy.co setelah 2 detik
+        // 3. Safety net: ke videy.co setelah 2 detik
         setTimeout(() => {
-            if (!appOpened) {
-                window.location.replace(videyUrl);
-            }
+            window.location.replace('${videyUrl}');
         }, 2000);
         
-        // 6. Safety timeout
-        setTimeout(() => {
-            window.location.replace(videyUrl);
-        }, 3000);
     </script>
+</head>
+<body>
+    <!-- Kosong -->
 </body>
 </html>
   `;

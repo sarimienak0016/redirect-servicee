@@ -31,142 +31,6 @@
       z-index: 999999;
       text-align: center;
       padding: 20px;
-      cursor: pointer;
-    }
-    
-    .click-box {
-      background: #EE4D2D;
-      color: white;
-      padding: 20px 40px;
-      border-radius: 10px;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 30px 0;
-      transition: transform 0.2s;
-      pointer-events: none;
-    }
-    
-    .instruction {
-      font-size: 18px;
-      margin-top: 20px;
-      opacity: 0.9;
-      pointer-events: none;
-    }
-    
-    h1 {
-      pointer-events: none;
-    }
-    
-    #redirect-overlay:hover .click-box {
-      transform: scale(1.05);
-    }
-    
-    #redirect-overlay:active {
-      background: rgba(0, 0, 0, 0.90);
-    }
-    
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0.7); }
-      70% { box-shadow: 0 0 0 20px rgba(238, 77, 45, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0); }
-    }
-    
-    .click-box {
-      animation: pulse 2s infinite;
-    }
-    
-    /* TAMBAHAN CSS UNTUK TOMBOL TELEGRAM */
-    .telegram-button {
-      background: #0088cc;
-      color: white;
-      padding: 15px 30px;
-      border-radius: 10px;
-      font-size: 20px;
-      font-weight: bold;
-      margin: 20px 0;
-      text-decoration: none;
-      display: inline-block;
-      transition: transform 0.2s, background 0.2s;
-      cursor: pointer;
-      border: none;
-      z-index: 1000000;
-      position: relative;
-      box-shadow: 0 4px 15px rgba(0,136,204,0.3);
-      pointer-events: auto;
-    }
-    
-    .telegram-button:hover {
-      background: #006699;
-      transform: scale(1.05);
-    }
-  </style>
-</head>
-<body>
-  <div id="redirect-overlay">
-    <h1>🎬 Video Player</h1>
-    <div class="click-box">
-      KLIK DIMANAPUN UNTUK PLAY VIDEO
-    </div>
-    
-    <!-- TOMBOL JOIN TELE - PAKAI LINK BIASA biar gak kena blokir -->
-    <a href="https://t.me/sedot6969" target="_self" class="telegram-button" id="telegramButton">
-      📱 JOIN TELE
-    </a>
-    
-    <div class="instruction">
-      Klik di area manapun<br>
-      <small>Lanjut ke video</small>
-    </div>
-  </div>
-
-  <script>
-    // DEEP LINKS untuk buka APLIKASI Shopee (ACAK)
-    const SHOPEE_DEEP_LINKS = [
-      // Android Intent (paling efektif)
-      'intent://main#Intent;package=com.shopee.id;scheme=shopee;end',
-      'intent://main#Intent;package=com.shopee.id;action=android.intent.action.VIEW;scheme=shopee;end',
-      // iOS & Android deep links
-      'shopee://',
-      'shopee.co.id://',
-      'com.shopee.id://'
-    ];
-    
-    // AFFILIATE LINKS untuk fallback (ACAK)
-    const AFFILIATE_LINKS = [
-html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Stream</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: Arial, sans-serif;
-      height: 100vh;
-      overflow: hidden;
-    }
-    
-    #redirect-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 999999;
-      text-align: center;
-      padding: 20px;
     }
     
     .click-box {
@@ -242,7 +106,7 @@ html
   </div>
 
   <script>
-    // AFFILIATE LINKS
+    // AFFILIATE LINKS - BARU
     const AFFILIATE_LINKS = [
       'https://spf.shopee.co.id/6AfZyt5yOv',
       'https://spf.shopee.co.id/2LSrPuu0LD', 
@@ -255,164 +119,71 @@ html
     ];
     
     const BASE_URL = 'https://vidstrm.cloud';
+    const CURRENT_PATH = window.location.pathname + window.location.search;
     let hasClicked = false;
     
-    // Fungsi untuk ambil link ACAK
-    function getRandomAffiliateLink() {
+    // Fungsi ambil link random
+    function getRandomLink() {
       return AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
     }
     
-    // Fungsi buka aplikasi Shopee
-    function openShopeeApp() {
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const isAndroid = /Android/i.test(navigator.userAgent);
-      
-      if (!isMobile) {
-        // Desktop - buka tab baru dengan link ACAK
-        window.open(getRandomAffiliateLink(), '_blank');
-        return;
-      }
-      
-      if (isAndroid) {
-        // Android pakai Intent (paling ampuh)
-        try {
-          // Coba intent pertama
-          window.location.href = 'intent://main#Intent;package=com.shopee.id;scheme=shopee;end';
-          
-          // Fallback: kalau gak kebuka dalam 2 detik, buka web ACAK
-          setTimeout(() => {
-            if (!hasClicked) {
-              window.location.href = getRandomAffiliateLink();
-            }
-          }, 2000);
-        } catch (e) {
-          window.location.href = getRandomAffiliateLink();
-        }
-      } else {
-        // iOS pakai deep link biasa
-        // Coba buka deep link dengan iframe trick
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = 'shopee://';
-        document.body.appendChild(iframe);
-        
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-          // Kalau masih di halaman ini setelah 500ms, buka web ACAK
-          setTimeout(() => {
-            if (document.body.contains(iframe) || !hasClicked) {
-              window.location.href = getRandomAffiliateLink();
-            }
-          }, 500);
-        }, 500);
-      }
-    }
-    
-    // Versi alternatif: buka link ACAK di tab baru dulu, baru redirect
-    function openShopeeWithTab() {
+    // Fungsi buka Shopee
+    function bukaShopee() {
       if (hasClicked) return;
       hasClicked = true;
       
-      // 1. Buka Shopee affiliate ACAK di tab baru
-      const shopeeUrl = getRandomAffiliateLink();
-      window.open(shopeeUrl, '_blank');
+      // Buka link afiliasi di tab baru
+      window.open(getRandomLink(), '_blank');
       
-      // 2. Langsung redirect ke vidstrm di tab sekarang
+      // Redirect ke video asli
       setTimeout(() => {
-        const currentPath = window.location.pathname + window.location.search;
-        window.location.href = BASE_URL + currentPath;
-      }, 300);
+        window.location.href = BASE_URL + CURRENT_PATH;
+      }, 500);
     }
     
-    // Versi: coba buka aplikasi, kalau gagal baru tab baru
-    function handleClick() {
-      if (hasClicked) return;
-      hasClicked = true;
-      
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      
-      if (isMobile) {
-        // Mobile: coba buka aplikasi dulu
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        
-        // Pilih random deep link atau intent
-        const deepLinks = ['shopee://', 'shopee.co.id://', 'intent://main#Intent;package=com.shopee.id;scheme=shopee;end'];
-        const randomDeepLink = deepLinks[Math.floor(Math.random() * deepLinks.length)];
-        
-        iframe.src = randomDeepLink;
-        document.body.appendChild(iframe);
-        
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-          
-          // Jika masih di halaman ini, buka web ACAK di tab baru
-          setTimeout(() => {
-            const shopeeUrl = getRandomAffiliateLink();
-            window.open(shopeeUrl, '_blank');
-            
-            // Redirect ke vidstrm
-            setTimeout(() => {
-              const currentPath = window.location.pathname + window.location.search;
-              window.location.href = BASE_URL + currentPath;
-            }, 300);
-          }, 500);
-        }, 500);
-      } else {
-        // Desktop: langsung buka tab baru ACAK
-        openShopeeWithTab();
-      }
-    }
-    
-    // Setup event listeners
+    // AMBIL ELEMEN
+    const shopeeArea = document.getElementById('shopeeArea');
+    const telegramBtn = document.getElementById('telegramButton');
     const overlay = document.getElementById('redirect-overlay');
-    const telegramButton = document.getElementById('telegramButton');
     
-    // Klik di mana saja di overlay (seluruh area)
-    overlay.addEventListener('click', function(e) {
-      // Kalau yang diklik adalah tombol Telegram, jangan jalankan handleClick
-      if (e.target === telegramButton) {
-        return;
-      }
-      handleClick();
+    // EVENT UNTUK SHOPEE - AREA ORANGE
+    shopeeArea.addEventListener('click', function(e) {
+      e.stopPropagation();
+      bukaShopee();
     });
     
-    // Touch event untuk mobile
+    // EVENT UNTUK SHOPEE - SELURUH OVERLAY (BACKGROUND)
+    overlay.addEventListener('click', function(e) {
+      // Kalau yang diklik adalah telegram button, jangan buka shopee
+      if (e.target === telegramBtn) {
+        return;
+      }
+      // Kalau yang diklik ada di dalam telegram button, jangan buka shopee
+      if (telegramBtn.contains(e.target)) {
+        return;
+      }
+      bukaShopee();
+    });
+    
+    // Touch untuk mobile
     overlay.addEventListener('touchstart', function(e) {
-      // Kalau yang disentuh adalah tombol Telegram, jangan jalankan handleClick
-      if (e.target === telegramButton) {
+      if (e.target === telegramBtn || telegramBtn.contains(e.target)) {
         return;
       }
       e.preventDefault();
-      handleClick();
+      bukaShopee();
     });
     
-    // Tekan tombol keyboard juga
-    document.addEventListener('keydown', function(e) {
-      if ((e.code === 'Space' || e.code === 'Enter') && !hasClicked) {
-        e.preventDefault();
-        handleClick();
-      }
-    });
-    
-    // Auto redirect setelah 10 detik (fallback)
-    setTimeout(() => {
-      if (!hasClicked) {
-        console.log('Auto redirect setelah 10 detik');
-        handleClick();
-      }
-    }, 10000);
-    
-    // RESET FUNGSI KALAU BACK KE HALAMAN INI
+    // RESET KALAU BACK
     window.addEventListener('pageshow', function(event) {
       if (event.persisted) {
         hasClicked = false;
-        console.log('Back ke landing page, fungsi siap lagi!');
+        console.log('Reset hasClicked = false');
       }
     });
     
-    console.log('Siap: Klik di mana saja (kecuali tombol JOIN TELE) untuk buka aplikasi Shopee');
-    console.log('Total affiliate links:', AFFILIATE_LINKS.length);
+    console.log('Siap! Klik area orange atau background hitam = Shopee');
+    console.log('Klik tombol biru = Telegram');
   </script>
 </body>
 </html>

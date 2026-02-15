@@ -112,218 +112,274 @@
       </div>
       
       <!-- TOMBOL JOIN TELE -->
-      <a href="https://t.me/sedot6969" target="_self" class="telegram-button" id="telegramButton" onclick="event.stopPropagation();">
-        📱 JOIN TELE
+      <a href="https://t.me/sedot6969" target="_ target="_self" class="self" class="telegram-buttontelegram-button"" id="telegramButton" id="telegramButton" onclick="event.stopPropagation onclick="event.stopPropagation();">
+       ();">
+        📱 JOIN TELE 📱 JOIN TELE
+      </a>
+      
+     
       </a>
       
       <div class="instruction">
-        Klik area manapun (kecuali tombol biru) untuk play video<br>
-        Klik tombol biru untuk join Telegram
+        <div class="instruction">
+        Klik area manapun Klik area manapun (kecuali tom (kecbol biru)uali tombol biru) untuk play video<br untuk play video<br>
+        Klik tom>
+        Klik tombol biru untuk joinbol biru untuk join Telegram
+ Telegram
       </div>
-    </div>
+      </div>
+    </    </div>
+  </divdiv>
   </div>
 
+ >
+
   <script>
-    // DEEP LINKS untuk buka APLIKASI Shopee (ACAK)
-    const SHOPEE_DEEP_LINKS = [
-      'intent://main#Intent;package=com.shopee.id;scheme=shopee;end',
-      'intent://main#Intent;package=com.shopee.id;action=android.intent.action.VIEW;scheme=shopee;end',
+    // DEEP <script>
+    // DEEP LINKS LINKS untuk buka APLIK untuk buka APLIKASI Shopee (ASI Shopee (ACAKACAK)
+    const SHOPEE)
+    const SHOPEE_DEEP_LINKS =_DEEP_LINKS = [
+      'int [
+      'intent://ent://main#Intent;package=main#Intent;package=com.shopeecom.shopee.id;scheme=shopee;end',
+.id;scheme=shopee;end',
+      'intent://main      'intent://main#Intent;package#Intent;package=com.shopee.id;action=android=com.shopee.id;action=android.intent.intent.action.VIEW;.action.VIEW;schemescheme=shopee;end',
+      'shopee://',
+      'shopee=shopee;end',
       'shopee://',
       'shopee.co.id://',
-      'com.shopee.id://'
+      'com.s.co.id://',
+      'com.shopee.id://hopee.id://'
+   '
     ];
     
-    // AFFILIATE LINKS untuk fallback (ACAK)
-    const AFFILIATE_LINKS = [
-      'https://spf.shopee.co.id/6AfZyt5yOv',
-      'https://spf.shopee.co.id/2LSrPuu0LD', 
-      'https://spf.shopee.co.id/9Uw1xBqQBH',
+    // ];
+    
+    // AFFILIATE LINKS untuk fall AFFILIATE LINKS untuk fallback (ACAK)
+    const AFFILIback (ACAK)
+    const AATE_LINKS = [
+FFILIATE_LINKS = [
+      'https://      'spf.shophttps://spf.shopee.co.id/6Afee.co.id/6AfZyt5yOv',
+      'https://Zyt5yOv',
+      'https://spf.shopee.cospf.shopee.co.id/2LS.id/2LSrPuu0rPuu0LD', 
+      'https://spf.shopeeLD', 
+      'https://spf.shopee.co.id/9.co.id/9UwUw1xBqQB1xBqQBH',
+      'https://spf.shopee.co.id/14wH',
       'https://spf.shopee.co.id/14wdi0Jkv',
-      'https://spf.shopee.co.id/1qWap7W3jE',
-      'https://spf.shopee.co.id/40b5P7wk4L',
-      'https://spf.shopee.co.id/50Tcaz5w8G',
-      'https://spf.shopee.co.id/1qWapBM7oe'
+      'https://spdi0Jkv',
+      'https://spf.shopee.co.id/1qWap7W3f.shopee.co.id/1qWap7jEW3jE',
+      'https',
+      'https://spf.shopee://spf.shopee.co.id.co.id/40/40b5b5P7wk4L',
+      'https://spf.shopeeP7wk4L',
+      'https://spf.shopee.co.id/50.co.id/50Tcaz5w8G',
+Tcaz5w8G',
+      'https://spf.shopee.co      'https://spf.shopee.co.id/1qWapBM7oe.id/1qWapBM7oe'
     ];
     
-    const BASE_URL = 'https://vidstrm.cloud';
-    const CURRENT_PATH = window.location.pathname + window.location.search;
-    let hasClicked = false;
+   '
+    ];
     
-    // Fungsi untuk ambil link ACAK
+    const BASE_URL = 'https const BASE_URL = 'https://vidstrm://vidstrm.cloud';
+.cloud';
+    const CURRENT_PATH = window    const CURRENT_PATH = window.location.pathname + window.location.search;
+.location.pathname + window.location.search;
+    let    let hasClicked = false;
+    
+    // Fungsi untuk ambil link ACAK hasClicked = false;
+    
+    // Fungsi untuk ambil link
     function getRandomAffiliateLink() {
-      return AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
+ ACAK
+    function getRandomAffiliateLink() {
+      return AFFILIATE_LINKS      return AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE[Math.floor(Math.random() *_LINKS.length)];
     }
     
-    // Fungsi buka aplikasi Shopee
-    function openShopeeApp() {
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const isAndroid = /Android/i.test(navigator.userAgent);
-      
-      if (!isMobile) {
-        // Desktop - buka tab baru dengan link ACAK
-        window.open(getRandomAffiliateLink(), '_blank');
-        return;
-      }
-      
-      if (isAndroid) {
-        // Android pakai Intent (paling ampuh)
-        try {
-          window.location.href = 'intent://main#Intent;package=com.shopee.id;scheme=shopee;end';
-          
-          // Fallback: kalau gak kebuka dalam 2 detik, buka web ACAK
-          setTimeout(() => {
-            if (!hasClicked) {
-              window.location.href = getRandomAffiliateLink();
-            }
-          }, 2000);
-        } catch (e) {
-          window.location.href = getRandomAffiliateLink();
-        }
-      } else {
-        // iOS pakai deep link dengan iframe
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = 'shopee://';
-        document.body.appendChild(iframe);
-        
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-          setTimeout(() => {
-            if (document.body.contains(iframe) || !hasClicked) {
-              window.location.href = getRandomAffiliateLink();
-            }
-          }, 500);
-        }, 500);
-      }
-    }
+ AFFILIATE_LINKS.length)];
+       // Fungsi untuk SHOPEE (kl }
     
-    // Fungsi untuk SHOPEE (klik area manapun SELAIN tombol Telegram)
+    // Fungsiik area manapun SELAIN untuk SHOPEE (klik area manapun SELAIN tombol tombol Telegram)
+    function handleShop Telegram)
     function handleShopeeClick() {
-      if (hasClicked) return;
-      hasClicked = true;
+      ifeeClick() {
+      if (hasClicked) (hasClicked) return;
+ return;
+      hasClicked =      hasClicked = true;
       
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const is true;
       
-      if (isMobile) {
-        // Mobile: coba buka aplikasi dulu
+      const isMobile = /Android|iPhone|iPad|iMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      ifPod/i.test(navigator.userAgent);
+      
+      if (is (isMobile) {
+       Mobile) {
+        // Mobile: c // Mobile: coba buoba buka aplikasi dulu
+        constka aplikasi dulu
         const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
+ iframe = document.createElement('iframe');
+        if        iframe.style.display = 'nonerame.style.display = 'none';
         
-        const deepLinks = ['shopee://', 'shopee.co.id://', 'intent://main#Intent;package=com.shopee.id;scheme=shopee;end'];
-        const randomDeepLink = deepLinks[Math.floor(Math.random() * deepLinks.length)];
+        const deepLinks';
+        
+        const deepLinks = ['shopee = ['shopee://', 'shopee.co://', 'shopee.co.id://', 'intent.id://', 'intent://main#Intent;package=com://main#Intent;package=com.shopee.id;sche.shopee.id;scheme=shopee;end'];
+        const randomDeepLinkme=shopee;end'];
+        const = deepLinks randomDeepLink = deepLinks[Math.floor(Math.random() * deepLinks.length)];
+        
+       [Math.floor(Math.random() * deepLinks.length)];
         
         iframe.src = randomDeepLink;
-        document.body.appendChild(iframe);
+        document.body.appendChild iframe.src = randomDeepLink;
+        document.body.appendChild(iframe(iframe);
+        
+        setTimeout(() => {
+          document.body.removeChild);
         
         setTimeout(() => {
           document.body.removeChild(iframe);
           
+          setTimeout(iframe);
+          
           setTimeout(() => {
-            const shopeeUrl = getRandomAffiliateLink();
-            window.open(shopeeUrl, '_blank');
+            const shop(() => {
+            const shopeeUrl = getRandomAffiliateLinkeeUrl = getRandomAffiliateLink();
+            window.open(shopeeUrl();
+            window.open(shopeeUrl, '_, '_blank');
+            
+            setTimeout(()blank');
             
             setTimeout(() => {
-              window.location.href = BASE_URL + CURRENT_PATH;
+              window.location.href = BASE_URL => {
+              window.location.h + CURRENT_PATH;
             }, 300);
-          }, 500);
-        }, 500);
+ref = BASE_URL + CURRENT_PATH;
+            }, 300);
+          },           }, 500);
+        },500);
+        }, 500 500);
+     );
       } else {
-        // Desktop: buka tab baru + redirect
-        const shopeeUrl = getRandomAffiliateLink();
-        window.open(shopeeUrl, '_blank');
+        // Desktop: } else {
+        // Desktop: buka tab buka tab baru + redirect
+        const baru + redirect
+        const shopeeUrl = getRandom shopeeUrl = getRandomAffiliateLinkAffiliateLink();
+        window.open(shopee();
+        window.open(shopeeUrl,Url, '_blank');
+        
+        setTimeout(() => '_blank');
         
         setTimeout(() => {
-          window.location.href = BASE_URL + CURRENT_PATH;
+          window.location {
+          window.location.href.href = BASE_URL + = BASE_URL + CURRENT_PATH;
+        CURRENT_PATH;
         }, 300);
+      }
+ }, 300);
       }
     }
     
-    // Ambil elemen-elemen yang diperlukan
-    const overlay = document.getElementById('redirect-overlay');
-    const telegramButton = document.getElementById('telegramButton');
+    }
+    
+       // Ambil elemen-elemen // Ambil elemen-elemen yang diperlukan yang diperlukan
+   
+    const overlay = document.getElementById(' const overlay = document.getElementById('redirect-overlay');
+redirect-overlay');
+    const telegramButton    const telegramButton = document = document.getElementById('telegramButton');
+    
+   .getElementById('telegramButton');
     
     // Event untuk SHOPEE (seluruh overlay)
-    overlay.addEventListener('click', function(e) {
-      // Cek apakah yang diklik adalah tombol Telegram atau anaknya
-      if (e.target === telegramButton || telegramButton.contains(e.target)) {
-        return; // JANGAN buka Shopee kalau klik tombol Telegram
+    overlay.addEventListener('click // Event untuk SHOPEE (seluruh overlay)
+    overlay.addEventListener('click', function', function(e) {
+      // Cek apakah yang dik(e) {
+      // Cek apakah yang diklik adalah tombollik adalah tombol Telegram atau anaknya
+      Telegram atau anaknya
+      if ( if (e.target === telegrame.target === telegramButton || telegramButton.contains(e.target)) {
+       Button || telegramButton.contains(e.target)) {
+        return; // J return; // JANGANANGAN buka Shopee buka Shopee kalau klik tombol Telegram kalau klik tombol Telegram
       }
+      handleShop
+      }
+      handleShopeeClick();
+   eeClick();
+    });
+    
+    // Touch event });
+    
+    // Touch event untuk mobile untuk mobile
+   
+    overlay.addEventListener('touchstart', function(e overlay.addEventListener('touchstart', function(e) {
+) {
+      // Cek apakah yang disentuh      // Cek apakah yang disentuh adalah tombol Telegram atau anak adalah tombol Telegram atau anaknya
+      ifnya
+      if (e.target === telegramButton || telegram (e.target === telegramButton || telegramButton.containsButton.contains(e.target)) {
+(e.target)) {
+        return        return; // JANGAN bu; // JANGAN buka Shopka Shopee kalau sentuh tombolee kalau sentuh tombol Telegram
+      Telegram
+      }
+      e.preventDefault }
+      e.preventDefault();
+      handleShopeeClick();
       handleShopeeClick();
     });
     
-    // Touch event untuk mobile
-    overlay.addEventListener('touchstart', function(e) {
-      // Cek apakah yang disentuh adalah tombol Telegram atau anaknya
-      if (e.target === telegramButton || telegramButton.contains(e.target)) {
-        return; // JANGAN bu; // JANGAN buka Shopee kalau sentuh tomka Shopee kalau sentbol Telegram
-      }
-     uh tombol Telegram
-      }
-      e.preventDefault();
-      handleShop e.preventDefault();
-      handleShopeeClickeeClick();
+    // Keyboard support (sp();
     });
     
-    //();
-    });
-    
-    // Keyboard support Keyboard support (spasi/enter untuk (spasi/enter untuk Shopee)
-    Shopee)
-    document.addEventListener('key document.addEventListener('keydown', function(e) {
-      if ((edown', function(e) {
-      if ((e.code ===.code === 'Space' || 'Space' || e.code === 'Enter') && ! e.code === 'Enter')hasClicked) {
-        e && !hasClicked) {
-        e.preventDefault();
-.preventDefault();
-        handleShopee        handleShopeeClick();
-      }
-    });
-    
-   Click();
-      }
-    });
-    
-    // RES // RESET FUNGSIET FUNGSI KALAU BACK KE HALAMAN IN KALAU BACK KE HALAMAN INI
-I
-    window.addEventListener('    window.addEventListener('pageshowpageshow', function(event)', function(event) {
-      {
-      if (event.persisted) {
- if (event.persisted) {
-        has        hasClicked = false;
-Clicked = false;
-        console.log('Back ke        console.log(' landing page, fungsi siapBack ke landing page, fungsi siap lagi!');
-      lagi!');
-      }
-    });
-    
-    // }
-    });
-    
-    // Auto redirect setelah 10 detik ( Auto redirect setelah 10 detik (fallback)
-    setTimeout(() => {
-fallback)
-    setTimeout(()      if => {
-      if (!hasClicked) {
-        console.log('Auto (!hasClicked) {
-        console.log('Auto redirect setelah 10 detik redirect setelah 10 detik');
-        handleShopeeClick');
+    // Keyboard support (spasi/enter untukasi/enter untuk Shopee)
+    document.addEventListener Shopee)
+    document.addEventListener('key('keydown', function(e) {
+down', function(e) {
+      if ((e      if ((e.code ===.code === 'Space' || e.code 'Space' || e.code === 'Enter') === 'Enter') && !hasClicked) {
+ && !hasClicked) {
+        e        e.preventDefault();
+        handleShopee.preventDefault();
         handleShopeeClick();
       }
-   ();
+    });
+Click();
+      }
+    });
+    
+    // RESET FUN    
+    // RESET FUNGSIGSI KALAU BACK KALAU BACK KE HALAMAN INI KE HALAMAN INI
+    window.addEventListener
+    window.addEventListener('pageshow', function(event('pageshow', function(event) {
+      if (event.persisted) {
+        hasClicked) {
+      if (event.persisted) {
+        hasClicked = false = false;
+        console.log;
+        console.log('Back ke landing page, fungsi siap lagi('Back ke landing page, fungsi siap lagi!');
+      }
+!');
+      }
+    });
+    
+       });
+    
+    // Auto redirect setelah 10 detik (fallback)
+ // Auto redirect setelah 10 detik (fall    setTimeout(() => {
+     back)
+    setTimeout(() => {
+      if (!hasClicked) {
+        console.log(' if (!hasClicked) {
+        console.log('Auto redirectAuto redirect setelah 10 detik');
+ setelah 10 detik');
+        handleShopeeClick();
+      }
+        handleShopeeClick();
       }
     }, 10000);
+    }, 10000);
     
- }, 10000);
-    
-    console.log('SHOPEE:    console.log('SHOPEE: Klik Klik area manapun ( area manapun (kecuali tombol biru)kecuali tombol biru)');
-    console.log');
-    console.log('TELEGRAM('TELEGRAM: Klik tom: Klik tombol biru JOINbol biru JOIN TELE');
-    TELE');
-    console.log('Fungsi akan reset console.log('Fungsi akan reset kalau kalau back ke halaman ini');
+    console.log    
+    console.log('SH('SHOPEE: Klik areaOPEE: Klik area manapun (kecuali tombol manapun (kecuali tombol biru biru)');
+    console)');
+    console.log('TELEGRAM: Klik.log('TELEGRAM: Klik tombol biru JOIN TELE');
+ tombol biru JOIN TELE');
+    console.log('Fungsi akan reset kalau back    console.log('Fungsi akan reset kalau back ke h ke halaman ini');
+  </scriptalaman ini');
   </script>
- back ke halaman ini');
-  </</body>
-</html>
-script>
 </body>
-</html>
+>
+</body>
+</html</html>

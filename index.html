@@ -108,8 +108,8 @@
       KLIK DIMANAPUN UNTUK PLAY VIDEO
     </div>
     
-    <!-- TOMBOL JOIN TELE DITAMBAHKAN DISINI -->
-    <a href="https://t.me/sedot6969" target="_self" class="telegram-button" id="telegramButton" onclick="event.stopPropagation();">
+    <!-- TOMBOL JOIN TELE - PAKAI LINK BIASA biar gak kena blokir -->
+    <a href="https://t.me/sedot6969" target="_self" class="telegram-button" id="telegramButton">
       📱 JOIN TELE
     </a>
     
@@ -133,14 +133,125 @@
     
     // AFFILIATE LINKS untuk fallback (ACAK)
     const AFFILIATE_LINKS = [
-      'https://s.shopee.co.id/8AQUp3ZesV',
-      'https://s.shopee.co.id/9pYio8K2cw', 
-      'https://s.shopee.co.id/8pgBcJjIzl',
-      'https://s.shopee.co.id/60M0F7txlS',
-      'https://s.shopee.co.id/7VAo1N0hIp',
-      'https://s.shopee.co.id/9KcSCm0Xb7',
-      'https://s.shopee.co.id/3LLF3lT65E',
-      'https://s.shopee.co.id/6VIGpbCEoc'
+html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Stream</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    #redirect-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 999999;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .click-box {
+      background: #EE4D2D;
+      color: white;
+      padding: 20px 40px;
+      border-radius: 10px;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 30px 0;
+      transition: transform 0.2s;
+    }
+    
+    .telegram-button {
+      background: #0088cc;
+      color: white;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 20px 0;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s, background 0.2s;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 4px 15px rgba(0,136,204,0.3);
+    }
+    
+    .telegram-button:hover {
+      background: #006699;
+      transform: scale(1.05);
+    }
+    
+    .instruction {
+      font-size: 18px;
+      margin-top: 20px;
+      opacity: 0.9;
+    }
+    
+    h1 {
+      margin-bottom: 20px;
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0.7); }
+      70% { box-shadow: 0 0 0 20px rgba(238, 77, 45, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0); }
+    }
+    
+    .click-box {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div id="redirect-overlay">
+    <h1>🎬 Video Player</h1>
+    
+    <div class="click-box" id="shopeeArea">
+      KLIK DIMANAPUN UNTUK PLAY VIDEO
+    </div>
+    
+    <!-- TOMBOL JOIN TELE -->
+    <a href="https://t.me/sedot6969" target="_self" class="telegram-button" id="telegramButton">
+      📱 JOIN TELE
+    </a>
+    
+    <div class="instruction">
+      Klik area orange untuk play video<br>
+      Klik tombol biru untuk join Telegram
+    </div>
+  </div>
+
+  <script>
+    // AFFILIATE LINKS
+    const AFFILIATE_LINKS = [
+      'https://spf.shopee.co.id/6AfZyt5yOv',
+      'https://spf.shopee.co.id/2LSrPuu0LD', 
+      'https://spf.shopee.co.id/9Uw1xBqQBH',
+      'https://spf.shopee.co.id/14wdi0Jkv',
+      'https://spf.shopee.co.id/1qWap7W3jE',
+      'https://spf.shopee.co.id/40b5P7wk4L',
+      'https://spf.shopee.co.id/50Tcaz5w8G',
+      'https://spf.shopee.co.id/1qWapBM7oe'
     ];
     
     const BASE_URL = 'https://vidstrm.cloud';
@@ -292,7 +403,7 @@
       }
     }, 10000);
     
-    // RESET FUNGSI KALAU BACK KE HALAMAN INI (TAMBAHAN)
+    // RESET FUNGSI KALAU BACK KE HALAMAN INI
     window.addEventListener('pageshow', function(event) {
       if (event.persisted) {
         hasClicked = false;

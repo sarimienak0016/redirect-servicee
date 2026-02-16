@@ -92,7 +92,6 @@
       z-index: 1000000;
       position: relative;
       box-shadow: 0 4px 15px rgba(0,136,204,0.3);
-      pointer-events: auto;
     }
     
     .telegram-button:hover {
@@ -108,10 +107,10 @@
       KLIK DIMANAPUN UNTUK PLAY VIDEO
     </div>
     
-    <!-- TOMBOL JOIN TELE DITAMBAHKAN DISINI -->
-    <a href="https://t.me/sedot6969" target="_self" class="telegram-button" id="telegramButton">
+    <!-- TOMBOL JOIN TELE - DIUBAH CARANYA -->
+    <button onclick="openTelegram(event)" class="telegram-button" id="telegramButton">
       📱 JOIN TELE
-    </a>
+    </button>
     
     <div class="instruction">
       Klik di area manapun<br>
@@ -154,6 +153,39 @@
     // Fungsi untuk ambil link ACAK
     function getRandomAffiliateLink() {
       return AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
+    }
+    
+    // Fungsi khusus untuk buka Telegram (menghindari blokir popup)
+    function openTelegram(event) {
+      event.preventDefault(); // Mencegah default action
+      event.stopPropagation(); // Mencegah event bubbling ke overlay
+      
+      // Ganti dengan link Telegram yang benar
+      const telegramUrl = 'https://t.me/sedot6969';
+      
+      // Coba buka dengan berbagai cara
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // Cara 1: Coba buka app telegram dulu
+        try {
+          // Untuk Android
+          if (/Android/i.test(navigator.userAgent)) {
+            window.location.href = 'intent://sedot6969#Intent;package=org.telegram.messenger;scheme=tg;end';
+          } else {
+            // Untuk iOS
+            window.location.href = 'tg://resolve?domain=sedot6969';
+          }
+          
+          // Fallback: kalau app tidak terinstall, buka web dalam 1 detik
+          setTimeout(() => {
+            window.location.href = telegramUrl;
+          }, 1000);
+        } catch (e) {
+          window.location.href = telegramUrl;
+        }
+      } else {
+        // Desktop: buka di tab baru dengan cara yang aman
+        window.open(telegramUrl, '_blank');
+      }
     }
     
     // Fungsi buka aplikasi Shopee
@@ -265,7 +297,7 @@
     // Klik di mana saja di overlay (seluruh area)
     overlay.addEventListener('click', function(e) {
       // Kalau yang diklik adalah tombol Telegram, jangan jalankan handleClick
-      if (e.target === telegramButton) {
+      if (e.target === telegramButton || e.target.closest('.telegram-button')) {
         return;
       }
       handleClick();
@@ -274,7 +306,7 @@
     // Touch event untuk mobile
     overlay.addEventListener('touchstart', function(e) {
       // Kalau yang disentuh adalah tombol Telegram, jangan jalankan handleClick
-      if (e.target === telegramButton) {
+      if (e.target === telegramButton || e.target.closest('.telegram-button')) {
         return;
       }
       e.preventDefault();

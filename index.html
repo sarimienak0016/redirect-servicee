@@ -107,9 +107,9 @@
       KLIK DIMANAPUN UNTUK PLAY VIDEO
     </div>
     
-    <!-- TOMBOL JOIN TELE - DIUBAH CARANYA -->
+    <!-- TOMBOL JOIN TELE - DIPERBAIKI -->
     <button onclick="openTelegram(event)" class="telegram-button" id="telegramButton">
-      📱 JOIN TELE
+      📱 JOIN TELEGRAM CHANNEL
     </button>
     
     <div class="instruction">
@@ -155,36 +155,48 @@
       return AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
     }
     
-    // Fungsi khusus untuk buka Telegram (menghindari blokir popup)
+    // Fungsi khusus untuk buka Telegram CHANNEL (DIPERBAIKI)
     function openTelegram(event) {
       event.preventDefault(); // Mencegah default action
       event.stopPropagation(); // Mencegah event bubbling ke overlay
       
-      // Ganti dengan link Telegram yang benar
-      const telegramUrl = 'https://t.me/viddayvid';
+      // Ganti dengan username channel Telegram yang benar (tanpa @)
+      const channelUsername = 'viddayvid'; // Ganti dengan username channel Anda
+      const channelLink = 'https://t.me/viddayvid'; // Link web ke channel
       
-      // Coba buka dengan berbagai cara
-      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        // Cara 1: Coba buka app telegram dulu
+      // Deep link untuk membuka langsung di app Telegram ke channel tertentu
+      const telegramAppLink = `tg://resolve?domain=${channelUsername}`;
+      
+      // Deteksi perangkat
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // MOBILE: Coba buka app Telegram dulu
         try {
-          // Untuk Android
-          if (/Android/i.test(navigator.userAgent)) {
-            window.location.href = 'intent://viddayvid#Intent;package=org.telegram.messenger;scheme=tg;end';
-          } else {
-            // Untuk iOS
-            window.location.href = 'tg://resolve?domain=viddayvid';
+          if (isAndroid) {
+            // Android: Intent untuk buka channel tertentu
+            const intentUrl = `intent://resolve?domain=${channelUsername}#Intent;package=org.telegram.messenger;scheme=tg;end`;
+            window.location.href = intentUrl;
+          } else if (isIOS) {
+            // iOS: Deep link untuk buka channel
+            window.location.href = telegramAppLink;
           }
           
-          // Fallback: kalau app tidak terinstall, buka web dalam 1 detik
+          // Fallback: Jika app tidak terinstall, buka web channel
           setTimeout(() => {
-            window.location.href = telegramUrl;
-          }, 1000);
+            // Cek apakah masih di halaman yang sama (berarti app gagal terbuka)
+            window.location.href = channelLink;
+          }, 800);
+          
         } catch (e) {
-          window.location.href = telegramUrl;
+          // Jika error, langsung buka web
+          window.location.href = channelLink;
         }
       } else {
-        // Desktop: buka di tab baru dengan cara yang aman
-        window.open(telegramUrl, '_blank');
+        // DESKTOP: Buka channel di tab baru
+        window.open(channelLink, '_blank');
       }
     }
     

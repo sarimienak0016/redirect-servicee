@@ -155,40 +155,28 @@
       return AFFILIATE_LINKS[Math.floor(Math.random() * AFFILIATE_LINKS.length)];
     }
     
-    // Fungsi khusus untuk buka Telegram CHANNEL (DIPERBAIKI)
+    // FUNGSI TELEGRAM YANG DIPERBAIKI - BUKA LANGSUNG KE CHANNEL
     function openTelegram(event) {
       event.preventDefault(); // Mencegah default action
       event.stopPropagation(); // Mencegah event bubbling ke overlay
       
-      // Ganti dengan username channel Telegram yang benar (tanpa @)
-      const channelUsername = 'viddayvid'; // Ganti dengan username channel Anda
-      const channelLink = 'https://t.me/viddayvid'; // Link web ke channel
-      
-      // Deep link untuk membuka langsung di app Telegram ke channel tertentu
-      const telegramAppLink = `tg://resolve?domain=${channelUsername}`;
+      // GANTI dengan username channel Telegram yang benar (tanpa @)
+      const channelUsername = 'viddayvid'; // PASTIKAN CHANNEL INI SUDAH DIBUAT
+      const channelLink = `https://t.me/${channelUsername}`;
       
       // Deteksi perangkat
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const isAndroid = /Android/i.test(navigator.userAgent);
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       
       if (isMobile) {
-        // MOBILE: Coba buka app Telegram dulu
+        // MOBILE: Coba buka app Telegram dulu dengan cara yang lebih sederhana
         try {
-          if (isAndroid) {
-            // Android: Intent untuk buka channel tertentu
-            const intentUrl = `intent://resolve?domain=${channelUsername}#Intent;package=org.telegram.messenger;scheme=tg;end`;
-            window.location.href = intentUrl;
-          } else if (isIOS) {
-            // iOS: Deep link untuk buka channel
-            window.location.href = telegramAppLink;
-          }
+          // Coba buka dengan deep link sederhana
+          window.location.href = `tg://resolve?domain=${channelUsername}`;
           
-          // Fallback: Jika app tidak terinstall, buka web channel
+          // Fallback ke web jika app tidak terinstall (setelah 1 detik)
           setTimeout(() => {
-            // Cek apakah masih di halaman yang sama (berarti app gagal terbuka)
             window.location.href = channelLink;
-          }, 800);
+          }, 1000);
           
         } catch (e) {
           // Jika error, langsung buka web
